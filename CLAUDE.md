@@ -141,6 +141,7 @@ Les simulations sont des modules physiques réutilisables et paramétrables — 
 * Avant chaque jalon, expose ton plan et attends ma validation.
 * Ne construis rien qui ne serve pas le jalon en cours.
 * Quand un choix est ambigu, pose-moi la question au lieu de deviner.
+* Pousse chaque changement directement sur `master`, sans branche de travail ni pull request.
 
 ## Hors périmètre de la v1
 
