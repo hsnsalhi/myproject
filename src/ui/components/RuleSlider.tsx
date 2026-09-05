@@ -1,5 +1,5 @@
-import { useEffect, useRef } from 'react'
-import { StyleSheet, Text, TextInput, View } from 'react-native'
+import { useEffect, useRef, useState } from 'react'
+import { StyleSheet, Text, TextInput, View, type TextInputProps } from 'react-native'
 import { Gesture, GestureDetector } from 'react-native-gesture-handler'
 import Animated, { useAnimatedProps, useAnimatedStyle, useSharedValue } from 'react-native-reanimated'
 import { scheduleOnRN } from 'react-native-worklets'
@@ -7,7 +7,7 @@ import { colors } from '@/ui/theme/colors'
 import { spacing, stroke, touch } from '@/ui/theme/spacing'
 import { type } from '@/ui/theme/typography'
 
-Animated.addWhitelistedNativeProps({ text: true })
+// `text` est déjà une prop native de TextInput : Reanimated l'écrit directement depuis le thread d'interface.
 const AnimatedTextInput = Animated.createAnimatedComponent(TextInput)
 
 export interface SliderScaleSpec {
@@ -71,8 +71,11 @@ export function RuleSlider({ label, unit, min, max, value, scale, format, onChan
 
   const emit = (v: number): void => onChangeRef.current(v)
 
+  // Intention horizontale déclarée : sans cela, le ScrollView de la feuille avale un glissement oblique sur Android.
   const pan = Gesture.Pan()
     .hitSlop({ vertical: 10, horizontal: 10 })
+    .activeOffsetX([-6, 6])
+    .failOffsetY([-12, 12])
     .onBegin(() => {
       startPosition.value = position.value
       live.value = true
@@ -96,10 +99,12 @@ export function RuleSlider({ label, unit, min, max, value, scale, format, onChan
     transform: [{ translateX: position.value * Math.max(0, width.value - touch.thumb) }],
   }))
 
-  const readoutProps = useAnimatedProps(() => {
-    const v = positionToValue(position.value, min, max, scale)
-    return { text: format(v), defaultValue: format(v) }
-  })
+  // `text` est une prop native de TextInput que ses types TypeScript ne déclarent pas : d'où le passage par unknown.
+  const readoutProps = useAnimatedProps(
+    () => ({ text: format(positionToValue(position.value, min, max, scale)) }) as unknown as Partial<TextInputProps>,
+  )
+  // Figé au montage : une valeur par défaut recalculée à chaque rendu entrerait en concurrence avec animatedProps.
+  const [initialText] = useState(() => format(value))
 
   const readoutStyle = useAnimatedStyle(() => ({
     fontFamily: live.value ? 'IBMPlexMono_500Medium' : 'IBMPlexMono_400Regular',
@@ -115,7 +120,7 @@ export function RuleSlider({ label, unit, min, max, value, scale, format, onChan
             underlineColorAndroid="transparent"
             animatedProps={readoutProps}
             style={[type.readout, styles.readoutInput, readoutStyle]}
-            defaultValue={format(value)}
+            defaultValue={initialText}
           />
           <Text style={[type.monoSmall, styles.unit]}>{unit}</Text>
         </View>

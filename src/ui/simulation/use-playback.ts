@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useRef } from 'react'
+import { useCallback, useEffect, useMemo, useRef } from 'react'
 import { useFrameCallback, useSharedValue, type SharedValue } from 'react-native-reanimated'
 import { scheduleOnRN } from 'react-native-worklets'
 
@@ -22,14 +22,20 @@ interface Options {
 
 /**
  * L'horloge de la simulation. Avancée dans useFrameCallback sur le thread d'interface :
- * rien ne repasse par JavaScript pendant le mouvement. Émet onFinished une seule fois
- * quand le temps atteint la durée, sauf en boucle.
+ * rien ne repasse par JavaScript pendant le mouvement. La boucle d'images n'est active
+ * que pendant la lecture. Émet onFinished une seule fois quand le temps atteint la
+ * durée, sauf en boucle.
+ *
+ * Le callback d'image est stable : la durée et le mode boucle sont lus dans des valeurs
+ * partagées, sinon chaque rendu du composant hôte réenregistrerait le callback et
+ * perdrait une image de temps simulé.
  */
 export function usePlayback(duration_s: number, options: Options = {}): Playback {
   const t = useSharedValue(0)
   const speed = useSharedValue(1)
   const playing = useSharedValue(false)
-  const loop = options.loop ?? false
+  const duration = useSharedValue(duration_s)
+  const loop = useSharedValue(options.loop ?? false)
   const onFinishedRef = useRef(options.onFinished)
   onFinishedRef.current = options.onFinished
 
@@ -37,44 +43,60 @@ export function usePlayback(duration_s: number, options: Options = {}): Playback
     onFinishedRef.current?.()
   }, [])
 
-  useFrameCallback((frame) => {
-    'worklet'
-    if (!playing.value) return
-    const dt = (frame.timeSincePreviousFrame ?? 0) / 1000
-    const next = t.value + dt * speed.value
-    if (next >= duration_s) {
-      if (loop) {
-        t.value = 0
-        return
-      }
-      t.value = duration_s
-      playing.value = false
-      scheduleOnRN(finish)
-      return
-    }
-    t.value = next
-  })
+  const frame = useFrameCallback(
+    useCallback(
+      (info: { readonly timeSincePreviousFrame: number | null }) => {
+        'worklet'
+        if (!playing.value) return
+        const dt = (info.timeSincePreviousFrame ?? 0) / 1000
+        const next = t.value + dt * speed.value
+        if (next >= duration.value) {
+          if (loop.value) {
+            t.value = 0
+            return
+          }
+          t.value = duration.value
+          playing.value = false
+          scheduleOnRN(finish)
+          return
+        }
+        t.value = next
+      },
+      [duration, finish, loop, playing, speed, t],
+    ),
+    false,
+  )
+  const setActive = frame.setActive
 
   useEffect(() => {
     // Une nouvelle durée (paramètres changés) repart du début.
+    duration.value = duration_s
     t.value = 0
-  }, [duration_s, t])
+  }, [duration_s, duration, t])
+
+  useEffect(() => {
+    loop.value = options.loop ?? false
+  }, [options.loop, loop])
 
   const play = useCallback((): void => {
-    if (t.value >= duration_s) t.value = 0
+    if (t.value >= duration.value) t.value = 0
     playing.value = true
-  }, [duration_s, playing, t])
+    setActive(true)
+  }, [duration, playing, setActive, t])
   const pause = useCallback((): void => {
     playing.value = false
-  }, [playing])
+    setActive(false)
+  }, [playing, setActive])
   const replay = useCallback((): void => {
     t.value = 0
     playing.value = true
-  }, [playing, t])
+    setActive(true)
+  }, [playing, setActive, t])
   const reset = useCallback((): void => {
     playing.value = false
+    setActive(false)
     t.value = 0
-  }, [playing, t])
+  }, [playing, setActive, t])
   const setSpeed = useCallback(
     (value: number): void => {
       speed.value = value
@@ -82,7 +104,20 @@ export function usePlayback(duration_s: number, options: Options = {}): Playback
     [speed],
   )
 
-  return { t, speed, playing, play, pause, replay, reset, setSpeed }
+  // Quand la lecture se termine d'elle-même, la boucle d'images est arrêtée depuis JavaScript.
+  const finishedRef = onFinishedRef
+  useEffect(() => {
+    const previous = finishedRef.current
+    finishedRef.current = () => {
+      setActive(false)
+      previous?.()
+    }
+    return () => {
+      finishedRef.current = previous
+    }
+  })
+
+  return useMemo(() => ({ t, speed, playing, play, pause, replay, reset, setSpeed }), [t, speed, playing, play, pause, replay, reset, setSpeed])
 }
 
 /** Le facteur de ralenti proposé : celui de ×2, ×4, ×10 qui rapproche le plus la durée à l'écran de 2,5 s. */

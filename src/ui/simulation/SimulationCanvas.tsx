@@ -53,14 +53,16 @@ const TICK_DURATION_S = 0.18
  * au crayon et coches à l'encre, chronomètre. Tout ce qui bouge est dérivé de `t` sur le
  * thread d'interface.
  */
-export function SimulationCanvas({ height, tracks, bodies, bounds, t, speed, predicted, observed, showClock = true }: Props) {
+export function SimulationCanvas({ height: outerHeight, tracks, bodies, bounds, t, speed, predicted, observed, showClock = true }: Props) {
+  // onLayout mesure la boîte bord compris ; le Canvas vit dans la boîte intérieure.
   const [width, setWidth] = useState(0)
+  const height = outerHeight - 2 * stroke.medium
   const fonts = useCanvasFonts()
   const transform = useMemo(() => (width > 0 ? buildTransform(bounds, tracks, width, height) : null), [bounds, tracks, width, height])
   const grid = useMemo(() => (transform ? makeGridPicture(transform) : null), [transform])
 
   return (
-    <View style={[styles.frame, { height }]} onLayout={(e) => setWidth(e.nativeEvent.layout.width)}>
+    <View style={[styles.frame, { height: outerHeight }]} onLayout={(e) => setWidth(Math.max(0, e.nativeEvent.layout.width - 2 * stroke.medium))}>
       {transform && width > 0 && (
         <Canvas style={{ width, height }}>
           {grid && <Picture picture={grid} />}

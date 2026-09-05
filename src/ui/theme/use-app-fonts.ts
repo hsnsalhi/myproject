@@ -12,7 +12,7 @@ import { useFonts } from 'expo-font'
  * toutes les graisses dans l'application.
  */
 export function useAppFonts(): boolean {
-  const [loaded] = useFonts({
+  const [loaded, error] = useFonts({
     AtkinsonHyperlegible_400Regular,
     AtkinsonHyperlegible_700Bold,
     IBMPlexMono_400Regular,
@@ -20,5 +20,6 @@ export function useAppFonts(): boolean {
     STIXTwoText_400Regular,
     STIXTwoText_400Regular_Italic,
   })
-  return loaded
+  // Vrai dès que le chargement est terminé, réussi ou non : un échec ne doit jamais figer l'écran de lancement.
+  return loaded || error !== null
 }

@@ -17,13 +17,14 @@ if (__DEV__) {
 }
 
 export default function RootLayout() {
-  const fontsLoaded = useAppFonts()
+  // Si une police échoue (connexion instable sous Expo Go), on lance quand même : les styles retombent sur la police système.
+  const fontsReady = useAppFonts()
 
   useEffect(() => {
-    if (fontsLoaded) void SplashScreen.hideAsync()
-  }, [fontsLoaded])
+    if (fontsReady) void SplashScreen.hideAsync()
+  }, [fontsReady])
 
-  if (!fontsLoaded) return null
+  if (!fontsReady) return null
 
   return (
     <GestureHandlerRootView style={{ flex: 1, backgroundColor: colors.papier }}>

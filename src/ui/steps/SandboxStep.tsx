@@ -46,11 +46,27 @@ export function SandboxStep<M extends SimulationModuleId>({ lesson, module, bodi
   const [params, setParams] = useState<ParamsOf<M>>(lesson.simulation.params)
   const result = useMemo(() => module.simulate(params), [module, params])
   const playback = usePlayback(result.duration_s, { loop: true })
+  const play = playback.play
   useEffect(() => {
-    playback.play()
-  }, [playback, result])
+    play()
+  }, [play, result.duration_s])
 
   const touched = (control: SandboxControl<M>): void => dispatch({ type: 'sandboxTouched', controlId: control.id })
+
+  // Échelle et formateur par réglette, stables entre deux rendus : la réglette en dépend dans un effet.
+  const sliderSpecs = useMemo(
+    () =>
+      new Map(
+        lesson.sandbox.controls
+          .filter((control): control is Extract<SandboxControl<M>, { kind: 'slider' }> => control.kind === 'slider')
+          .map((control) => {
+            const scale: SliderScaleSpec = control.scale.kind === 'linear' ? { kind: 'linear', step: control.scale.step } : { kind: 'log', step: control.scale.digits }
+            const format = control.scale.kind === 'linear' ? makeLinearFormat(decimalsOf(control.scale.step)) : makeLogFormat(control.scale.digits)
+            return [control.id, { scale, format }] as const
+          }),
+      ),
+    [lesson],
+  )
 
   return (
     <Sheet scroll footer={<PrimaryButton label={copy.buttons.fillPage} onPress={() => dispatch({ type: 'next' })} />}>
@@ -72,8 +88,9 @@ export function SandboxStep<M extends SimulationModuleId>({ lesson, module, bodi
               />
             )
           }
-          const scale: SliderScaleSpec = control.scale.kind === 'linear' ? { kind: 'linear', step: control.scale.step } : { kind: 'log', step: control.scale.digits }
-          const format = control.scale.kind === 'linear' ? makeLinearFormat(decimalsOf(control.scale.step)) : makeLogFormat(control.scale.digits)
+          const spec = sliderSpecs.get(control.id)
+          if (!spec) return null
+          const { scale, format } = spec
           return (
             <RuleSlider
               key={control.id}
