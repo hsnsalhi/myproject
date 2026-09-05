@@ -45,7 +45,7 @@ export function NotebookStep<M extends SimulationModuleId>({ lesson, journal, mo
           {page.equation && (
             <View style={styles.equation}>
               <StaticEquation tokens={page.equation.tokens} />
-              <Text style={[type.monoSmall, styles.legend]}>{lesson.concepts.includes('independance-de-la-masse') ? 'l’accélération ne dépend pas de la masse' : ''}</Text>
+              {page.equationCaption !== null && <Text style={[type.monoSmall, styles.legend]}>{page.equationCaption}</Text>}
             </View>
           )}
           {page.prediction && <Text style={type.reminder}>{copy.notebook.predicted(page.prediction.label, page.prediction.confidence)}</Text>}

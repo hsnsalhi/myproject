@@ -27,6 +27,7 @@ export function buildNotebookPage<M extends SimulationModuleId>(
     title: lesson.notebook.title,
     sketch: { module: lesson.simulation.module, params: lesson.simulation.params, result },
     equation: tokens ? { tokens } : null,
+    equationCaption: lesson.notebook.equationCaption ?? null,
     prediction: predictedOption && journal.prediction ? { label: predictedOption.label, confidence: journal.prediction.confidence } : null,
     observed: journal.verdict ? module.describe(journal.verdict.observables, lesson.simulation.params) : '',
     toReview,

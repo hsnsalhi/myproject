@@ -6,6 +6,7 @@ import type { Confidence } from './session'
 /** Ce que la leçon apporte à sa page de carnet. Le reste vient du moteur. */
 export interface NotebookSpec {
   readonly title: string
+  readonly equationCaption?: string      // légende sous l'équation découverte : « l'accélération ne dépend pas de la masse »
   readonly takeaway: string              // une phrase : ce qui a été compris, jamais une félicitation
 }
 
@@ -16,6 +17,7 @@ export interface NotebookPage<M extends SimulationModuleId> {
   readonly title: string
   readonly sketch: { readonly module: M; readonly params: ParamsOf<M>; readonly result: ResultOf<M> }
   readonly equation: EquationLine | null // la ligne de la dernière étape `result`
+  readonly equationCaption: string | null
   readonly prediction: { readonly label: string; readonly confidence: Confidence } | null
   readonly observed: string              // phrase produite par le module : « en même temps, 0,64 s »
   readonly toReview: ReadonlyArray<string>   // titres des exercices marqués à revoir

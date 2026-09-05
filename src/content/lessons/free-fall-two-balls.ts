@@ -150,6 +150,7 @@ export const freeFallTwoBalls = {
 
   notebook: {
     title: 'Deux billes, une seule chute',
+    equationCaption: 'l’accélération ne dépend pas de la masse',
     takeaway: 'La masse tire plus fort et résiste autant : elle s’annule. Sans air, tout tombe pareil.',
   },
 
