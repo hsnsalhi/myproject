@@ -178,7 +178,7 @@ Fond Encre. Deux courbes de chute qui se croisent : l'une Papier en trait plein,
 │   │   ├── integrators.ts                 # Euler semi-implicite à pas fixe, commenté (équation, schéma, unités, cas limites)
 │   │   ├── trajectory.ts                  # sampleAt(track, t) : interpolation linéaire dans les Float32Array
 │   │   ├── modules/
-│   │   │   ├── module.ts                  # interface SimulationModule<M> : simulate, observe, applyParamRef, unitOf, describe
+│   │   │   ├── module.ts                  # interface SimulationModule<M> : simulate, observe, read/apply par référence, unitOf, describe
 │   │   │   ├── constant-force-motion.ts   # chute libre, tir balistique, particule chargée ; traînée quadratique optionnelle
 │   │   │   └── index.ts                   # registre typé : moduleFor(simulation) avec rétrécissement sur le discriminant `module`
 │   │   └── __tests__/
@@ -236,13 +236,16 @@ Fond Encre. Deux courbes de chute qui se croisent : l'une Papier en trait plein,
 │   │       └── LessonScreen.tsx           # relie la leçon, le store, le résultat de simulation (useMemo) et l'étape courante
 ├── .gitignore
 ├── app.json                               # nom, schéma, portrait, icônes, plugins expo-router et expo-splash-screen (fond #F3F5F2)
+├── babel.config.js                        # uniquement le preset babel-preset-expo : nécessaire à jest, Metro s'en passe
 ├── jest.config.js                         # preset jest-expo/node ; testMatch sur src/**/__tests__
 ├── package.json                           # "main": "expo-router/entry"
-├── tsconfig.json                          # extends expo/tsconfig.base, strict, noUncheckedIndexedAccess, paths @/* → src/*
+├── tsconfig.json                          # extends expo/tsconfig.base, strict, noUncheckedIndexedAccess, paths @/* → ./src/*
 └── README.md
 ```
 
-Pas de `babel.config.js` : `babel-preset-expo` 57 ajoute lui-même le plugin worklets quand le paquet est installé, et les gabarits Expo 57 n'en ont pas. Pas de clé `newArchEnabled` : depuis React Native 0.82, la nouvelle architecture est la seule, ce qui exclut d'office tout paquet natif hérité.
+`babel.config.js` ne contient que le preset : `babel-preset-expo` 57 ajoute lui-même le plugin worklets quand le paquet est installé ; le fichier existe parce que jest, contrairement à Metro, ne reçoit pas de configuration implicite. Pas de clé `newArchEnabled` : depuis React Native 0.82, la nouvelle architecture est la seule, ce qui exclut d'office tout paquet natif hérité. `react-dom` est épinglé à la version de React du SDK, sinon npm remonte un pair incompatible via expo-router.
+
+Écarts du code par rapport à cet arbre, constatés en l'écrivant : le contrat du module sépare `readNumeric` / `applyNumeric` / `readBoolean` / `applyBoolean` au lieu d'un seul `applyParamRef`, pour que chaque référence soit typée avec la valeur qu'elle porte ; `ui/components/Sheet.tsx` (la feuille, avec ou sans défilement, et son bouton en bas) et `ui/steps/step-props.ts` (ce que chaque étape reçoit) ont été ajoutés ; `EquationLine.tsx` exporte aussi `StaticEquation` pour la page de carnet ; les polices s'importent par sous-chemin des paquets `@expo-google-fonts`, sans quoi toutes les graisses sont embarquées.
 
 ### Conventions
 
