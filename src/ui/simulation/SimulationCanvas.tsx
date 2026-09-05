@@ -42,6 +42,8 @@ interface Props {
   /** Repères confirmés par la simulation : quand ils diffèrent de la prédiction, le rang prédit est barré. */
   readonly observed?: ReadonlyArray<Rank>
   readonly showClock?: boolean
+  /** La légende gêne dans une vignette : la page de carnet la retire. */
+  readonly showLegend?: boolean
 }
 
 const BALL_RADIUS_PX = 12
@@ -53,7 +55,7 @@ const TICK_DURATION_S = 0.18
  * au crayon et coches à l'encre, chronomètre. Tout ce qui bouge est dérivé de `t` sur le
  * thread d'interface.
  */
-export function SimulationCanvas({ height: outerHeight, tracks, bodies, bounds, t, speed, predicted, observed, showClock = true }: Props) {
+export function SimulationCanvas({ height: outerHeight, tracks, bodies, bounds, t, speed, predicted, observed, showClock = true, showLegend = true }: Props) {
   // onLayout mesure la boîte bord compris ; le Canvas vit dans la boîte intérieure.
   const [width, setWidth] = useState(0)
   const height = outerHeight - 2 * stroke.medium
@@ -80,7 +82,7 @@ export function SimulationCanvas({ height: outerHeight, tracks, bodies, bounds, 
               </Group>
             )
           })}
-          <Legend bodies={bodies} font={fonts.small} />
+          {showLegend && <Legend bodies={bodies} font={fonts.small} />}
           {showClock && <Clock t={t} transform={transform} font={fonts.readout} />}
         </Canvas>
       )}

@@ -41,7 +41,7 @@ export function NotebookStep<M extends SimulationModuleId>({ lesson, journal, mo
         <GridHeader left={copy.notebook.page(page.number)} right={formatDate(page.date)} />
         <View style={styles.body}>
           <Prose variant="question">{page.title}</Prose>
-          <SimulationCanvas height={170} tracks={result.tracks} bodies={bodies} bounds={result.bounds_m} t={t} speed={speed} predicted={predicted} observed={observed} showClock={false} />
+          <SimulationCanvas height={170} tracks={result.tracks} bodies={bodies} bounds={result.bounds_m} t={t} speed={speed} predicted={predicted} observed={observed} showClock={false} showLegend={false} />
           {page.equation && (
             <View style={styles.equation}>
               <StaticEquation tokens={page.equation.tokens} />
