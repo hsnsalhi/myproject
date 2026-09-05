@@ -803,6 +803,8 @@ Note sur les valeurs, vérifiées par intégration numérique : une bille de plo
 
 ## 4. Questions ouvertes
 
+Tranchées le 5 septembre 2026 : les cinq recommandations ci-dessous sont retenues telles quelles, ainsi que les trois points de fond (direction artistique, arborescence, schéma). Le code du jalon 1 en découle.
+
 1. **Le carnet du jalon 1 est-il persisté ?** La persistance est prévue au jalon 6, mais « interruptible sans perte » suppose de survivre à une fermeture de l'app. Recommandation : au jalon 1, la page est générée et affichée, le journal vit en mémoire dans zustand ; expo-sqlite arrive au jalon 6 avec le journal déjà dans sa forme finale, plus une version de leçon.
 2. **Langue des identifiants.** Recommandation : code en anglais, contenu, commentaires, textes d'interface et identifiants de contenu en français, avec le glossaire fixé en section 2.
 3. **Thème sombre.** Recommandation : aucun au jalon 1 ; la direction « Crayon et encre » est une feuille de papier claire. Un thème « ardoise » pourrait suivre si les retours le demandent.
