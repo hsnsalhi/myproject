@@ -2,6 +2,8 @@
 
 Ce document contient les trois points à valider avant la première ligne de code du jalon 1 : la direction artistique, l'arborescence des fichiers et le schéma de données d'une leçon. Chaque point peut être validé, amendé ou refusé indépendamment. La section 4 liste les choix qui demandent un arbitrage, avec une recommandation pour chacun.
 
+Une première version a été soumise à trois relectures adversariales indépendantes (design et accessibilité, Expo et rendu, TypeScript et physique). Leurs critiques fondées sont intégrées ici ; les deux seules écartées sont signalées dans les sections concernées.
+
 ---
 
 ## 1. Direction artistique
@@ -10,88 +12,127 @@ Ce document contient les trois points à valider avant la première ligne de cod
 
 **« Crayon et encre »** — le carnet de laboratoire sur papier millimétré, avec les lectures d'un oscilloscope.
 
-Dans un vrai carnet de labo, on écrit à l'encre parce que l'encre ne s'efface pas : c'est le registre de ce qui a été mesuré. Le crayon, lui, sert aux hypothèses, aux brouillons, à ce qu'on croit avant de savoir. L'app reprend ce contrat tel quel : **ce que l'utilisateur prédit est au crayon, en pointillé ocre ; ce que la simulation mesure est à l'encre, en trait plein.** Toute la direction découle de cette règle. Le papier millimétré fournit la grille de fond des simulations, avec des unités réelles. L'oscilloscope fournit les lectures chiffrées (chronomètre, valeurs de curseurs) en caractères à chasse fixe.
+Dans un vrai carnet de labo, on écrit à l'encre parce que l'encre ne s'efface pas : c'est le registre de ce qui a été mesuré. Le crayon sert aux hypothèses, aux brouillons, à ce qu'on croit avant de savoir. L'app reprend ce contrat tel quel : **ce que l'utilisateur prédit est au crayon, en pointillé ocre ; ce que la simulation mesure est à l'encre, en trait plein.** Le papier millimétré fournit la grille de fond des simulations, avec des unités réelles. L'oscilloscope fournit les lectures chiffrées (chronomètre, valeurs de curseurs) en caractères à chasse fixe.
 
 ### Palette
 
 | Nom | Hex | Rôle | Contraste sur Papier |
 |---|---|---|---|
-| Papier | `#F3F5F2` | Fond de tous les écrans et des pages du carnet. Blanc légèrement froid, ni crème ni chaud. | — |
-| Trame | `#D3DBD5` | Grille millimétrée dans le cadre de simulation, pistes de curseurs, filets de la ligne d'équation. Volontairement discret. | 1,29:1 (décoratif) |
-| Encre | `#17233B` | Texte principal, titres, boutons pleins, et **la réalité simulée** : corps, tracés pleins, temps mesurés. | 14,29:1 (Papier sur Encre : 14,29:1) |
-| Graphite | `#5A6572` | Texte secondaire, légendes, unités, graduations, bordures au repos. | 5,41:1 |
-| Ocre | `#A5620B` | **La prédiction de l'utilisateur**, et elle seule : pointillés, fantômes, hachures d'écart, rappel de la prédiction, trait qui barre un terme. | 4,40:1 |
-| Phosphore | `#0F7B7A` | État actif et interaction : graduation courante de la règle, option sélectionnée, poignée de curseur, interrupteur enclenché. Jamais utilisé comme tracé dans le cadre de simulation. | 4,63:1 |
+| Papier | `#F3F5F2` | Fond des écrans et des pages du carnet. Blanc légèrement froid, ni crème ni chaud. | — |
+| Trame | `#B5C2B9` | Lignes fines de la grille millimétrée, pistes de curseurs, filets de la ligne d'équation, fond d'un bouton désactivé, plan sous la page de carnet. | 1,68:1 (lignes, jamais du texte) |
+| Encre | `#17233B` | Texte principal, titres, boutons pleins, remplissage d'un élément choisi, et **la réalité simulée** : corps, tracés pleins, temps mesurés, trait qui barre. | 14,29:1 (Papier sur Encre : 14,29:1) |
+| Graphite | `#5A6572` | Texte secondaire, légendes, unités, lignes renforcées de la grille. | 5,41:1 |
+| Ocre | `#9E5E0A` | **Ce que l'utilisateur a affirmé**, et rien d'autre : pointillés, chevrons, rappel de la prédiction, contour de l'option qu'il avait choisie. | 4,72:1 (texte autorisé) |
+| Vert-de-gris | `#0F7B7A` | Affordance d'interaction : poignée de réglette, interrupteur enclenché, point de la graduation courante. Jamais seul pour dire un état, jamais dans le cadre de simulation. | 4,63:1 |
 
-Ratios calculés avec la formule WCAG (luminance relative sRGB). Le texte principal dépasse 7:1, le texte secondaire dépasse 4,5:1, les tracés dépassent 3:1.
+Ratios calculés avec la formule WCAG (luminance relative sRGB). Encre dépasse 7:1, Graphite et Ocre dépassent 4,5:1, ce qui autorise l'Ocre en texte à 15 px.
 
-Le couple prédiction / réalité (Ocre / Encre) se distingue par la teinte, par la luminance (3,25:1 entre les deux) et par le style de trait (pointillé / plein). Un protanope ou un deutéranope les sépare sans effort : l'axe jaune-bleu est celui qu'il conserve. Ocre et Phosphore ont la même luminance ; c'est pour cela que Phosphore n'entre jamais dans le cadre de simulation et ne sert jamais de tracé.
+Le couple prédiction / réalité (Ocre / Encre) se distingue par la teinte, par la luminance (3,03:1 entre les deux) et par le style de trait (pointillé / plein) : un protanope ou un deutéranope les sépare sans effort. Vert-de-gris et Graphite, en revanche, sont proches pour un daltonien rouge-vert : **aucun état n'est donc jamais codé par la couleur seule**. Un élément choisi est rempli d'Encre, une graduation courante est plus haute, une poignée est cerclée.
 
-Il n'y a **ni rouge d'erreur ni vert de réussite**. Juste et faux se disent en Encre, avec des mots.
+Il n'y a **ni rouge d'erreur ni vert de réussite**. Juste et faux se disent en Encre, avec des mots (voir l'annexe A pour les mots).
 
 ### Typographies
 
-| Famille | Rôle | Chargement | Pourquoi |
+| Famille | Rôle | Fichiers | Pourquoi |
 |---|---|---|---|
-| **Atkinson Hyperlegible** (Regular, Bold, Italic) | Texte courant, questions, options, boutons, titres. | `@expo-google-fonts/atkinson-hyperlegible` 0.4.1 (OFL) | Dessinée pour la lisibilité : 1, l et I, 0 et O ne se confondent pas, ce qui compte quand on lit des valeurs. Humaniste et chaleureuse sans être enfantine, reconnaissable sans être maniérée. Tient à 15 px sur une dalle LCD d'entrée de gamme. |
-| **IBM Plex Mono** (Regular, Medium) | Mesures et lectures : chronomètre, valeurs de curseurs, unités, graduations, dates, numéros de page, étiquettes de la règle. | `@expo-google-fonts/ibm-plex-mono` 0.4.1 (OFL) | Chiffres à chasse fixe qui restent alignés quand ils défilent, comme une lecture d'oscilloscope. Ses empattements légers lui donnent un caractère d'instrument, pas de terminal. |
-| **STIX Two Text** (Regular, Italic) | Symboles physiques dans les équations construites terme par terme, et l'équation de la page de carnet. | `@expo-google-fonts/stix-two-text` 0.4.2 (OFL) | STIX est la police de l'édition scientifique. Les variables en italique, c'est la convention que les élèves voient dans leurs manuels : l'app n'invente pas une notation. Utilisée uniquement pour les équations, jamais pour le texte courant. |
+| **Atkinson Hyperlegible** | Texte courant, questions, options, boutons, titres. | Regular, Bold (`@expo-google-fonts/atkinson-hyperlegible` 0.4.1, OFL) | Dessinée pour la lisibilité : 1, l et I, 0 et O ne se confondent pas. Humaniste sans être enfantine. Tient à 15 px sur une dalle LCD d'entrée de gamme. |
+| **IBM Plex Mono** | Lectures : chronomètre, valeurs de curseurs, unités, graduations, dates, numéros de page, étiquettes. | Regular, Medium (`@expo-google-fonts/ibm-plex-mono` 0.4.1, OFL) | Chiffres à chasse fixe qui restent alignés quand ils défilent, comme une lecture d'oscilloscope. Medium pour la valeur en train de changer. |
+| **STIX Two Text** | Symboles physiques dans les équations et sur la page de carnet. | Regular, Italic (`@expo-google-fonts/stix-two-text` 0.4.2, OFL) | La police de l'édition scientifique. Les variables en italique, comme dans les manuels : l'app n'invente pas une notation. Jamais pour le texte courant. |
 
-Échelle typographique (px) : 13 (légendes mono), 15 (texte courant, mono valeurs), 17 (options, boutons), 22 (questions, titres de page), 28 (symboles d'équation, équation du carnet). Interligne 1,45 pour le texte courant. Aucune capitale forcée sauf sur les étiquettes mono de 13 px (`PAGE 1`, `T = 0,32 S`), avec un interlettrage de 0,06 em.
+Six fichiers, environ 1 Mo dont 615 Ko pour STIX, chargés une fois au lancement. Les trois paquets existent sur npm (vérifié).
 
-Les trois paquets existent sur npm (vérifié). Poids total à charger au démarrage : sept fichiers de police, chargés une fois par `expo-font`, avec écran de lancement jusqu'à disponibilité.
+### Concept de mise en page
 
-### Mise en page
-
-**Une feuille.** Chaque écran est une feuille Papier unique, sans cartes, sans ombres portées, sans dégradés. Marges latérales de 20 px, rythme vertical sur une base de 8 px (espacements 8, 16, 24, 40). La grille millimétrée n'apparaît **que dans le cadre de simulation** : le reste de la feuille est du papier nu, pour que le texte se lise.
-
-**La règle, en haut.** Une règle graduée de 24 px de haut, pleine largeur, porte huit graduations : une par étape de la leçon. La graduation courante est en Phosphore, les graduations passées en Encre, celles à venir en Graphite. Ce n'est pas une barre de progression : il n'y a pas de pourcentage, et toucher une graduation passée y ramène, ce qui rend la leçon interruptible et reprenable à tout moment.
-
-**Le cadre.** La simulation vit dans un rectangle à bord Encre de 1,5 px, arrondi de 12 px, qui contient la grille millimétrée en Trame (1 px, ligne renforcée à 1,5 px chaque dix carreaux), une échelle en mono sur le bord gauche (`0 m`, `1 m`, `2 m`), et une ligne de sol Encre de 2 px en bas. **Un carreau vaut une longueur réelle** : 10 cm pour une chute de 2 m ; le moteur choisit le pas (1 cm, 10 cm, 1 m, 10 m) pour ne jamais dessiner plus de quarante lignes, et la grille est rendue une fois en image Skia, pas à chaque frame. La bille de plomb est un disque plein Encre ; la bille de plastique, creuse, est un disque Papier à contour Encre de 2 px. Rayon à l'échelle, avec un minimum de 12 px pour rester visible. Le cadre occupe 60 % de la hauteur pendant l'observation, 35 % pendant l'explication, 45 % dans le bac à sable, et devient une vignette sur la page de carnet. Un chronomètre mono (`t = 0,32 s`) se lit dans son coin supérieur droit dès que le temps s'écoule.
-
-**Accroche.** Le fait, seul, en Atkinson 22 px Bold, centré verticalement sur la feuille, avec le cadre en dessous montrant les deux billes suspendues, immobiles. Un bouton plein « Continuer ».
-
-**Prédiction et pari de confiance.** La question en 22 px Bold. Trois lignes d'option pleine largeur de 56 px, arrondi 8 px, bord Graphite 1,5 px ; la ligne choisie passe en bord Phosphore 2 px et texte Phosphore. Dessous, le pari de confiance : un contrôle segmenté à trois cellules, « je devine · je pense · je suis sûr », la cellule choisie remplie Encre avec texte Papier. Le bouton principal « Lâcher les billes » (pleine largeur, 52 px, Encre, texte Papier, arrondi 8 px) reste en Trame avec texte Graphite tant que l'option et la confiance ne sont pas toutes deux choisies. Toutes les zones tactiles font au moins 48 px.
-
-**Observation.** Au-dessus du cadre, une ligne en Ocre rappelle la prédiction pendant toute la chute : « Ta prédiction : la lourde en premier. Tu en étais sûr. », soulignée d'un pointillé Ocre. Sous le cadre, deux boutons secondaires (bord Encre 1,5 px, texte Encre) : « Rejouer » et « Ralenti ×4 », ce dernier basculant en « Temps réel ». Le texte de révélation apparaît sous les boutons quand les billes ont touché le sol.
-
-**Explication.** Le cadre rejoue la chute en boucle, en petit. Dessous, les paragraphes courts, puis **la ligne d'équation** : une bande de 64 px de haut, délimitée par deux filets Trame, dans laquelle les termes apparaissent un par un, chaque terme en STIX Two 28 px avec sa signification en mono 13 px Graphite juste en dessous, comme une cotation de plan. Un bouton « Terme suivant » donne le rythme à l'utilisateur ; quand la masse s'annule, un trait Ocre de 2 px barre chaque `m`, puis la ligne finale `a = g` s'écrit en Encre.
-
-**Exercices et corrections.** Même disposition que la prédiction, bouton « Répondre ». À la correction, la bonne option prend un bord Encre 2 px et une étiquette mono `juste` ; l'option choisie, si elle est fausse, garde son bord Graphite. Aucune couleur de verdict. Le raisonnement suit en liste numérotée (numéros mono Graphite), toujours, même quand la réponse est juste. Si le pari était « je suis sûr » et la réponse fausse, un paragraphe introduit par l'étiquette mono `ce qui trompe` en Ocre précède la correction.
-
-**Bac à sable.** Le cadre rejoue en boucle et se met à jour à chaque geste. Chaque curseur est une réglette : piste Trame de 2 px, graduations mono aux extrémités, poignée ronde Phosphore de 28 px cerclée d'Encre 2 px, étiquette à gauche en Atkinson 15 px, valeur à droite en mono 15 px Encre avec son unité en Graphite. L'interrupteur de résistance de l'air fait 52 × 28 px, piste Trame et bouton Papier au repos, piste Phosphore enclenché, avec « sans » et « avec » en mono de part et d'autre. Les défis sont trois lignes de texte sous un titre « Trois défis, si tu veux », sans case à cocher ni compteur.
-
-**Carnet.** Voir la section dédiée plus bas.
+**Une feuille.** Chaque écran est une feuille Papier, sans cartes, sans ombres, sans dégradés. En haut, **la règle** : huit graduations, une par étape, qu'on peut toucher pour revenir en arrière. Au centre, quand la physique est là, **le cadre** : un rectangle à bord Encre qui contient la grille millimétrée, une échelle en mètres, une ligne de sol et un chronomètre. Un carreau vaut une longueur réelle. La grille n'existe que dans le cadre : le reste de la feuille est du papier nu, pour lire. Les options d'une question sont des **lignes de carnet** (une lettre à gauche, un filet en dessous), pas des boîtes. En bas, un seul bouton principal par écran, plein, qui dit ce qui va se passer.
 
 ### Élément signature
 
-**Le double trait.** Un pointillé Ocre pour ce qu'on croyait, un trait plein Encre pour ce qui s'est passé, et entre les deux, l'écart. Il apparaît partout où la leçon compare une idée à une mesure : sous le rappel de la prédiction (le souligné pointillé), dans le cadre pendant la chute (les repères d'arrivée), dans l'explication (le trait Ocre qui barre la masse), sur la page de carnet (le croquis conserve les deux traits), et dans l'icône de l'app : une courbe pointillée Ocre croisée par une courbe pleine Encre sur un carré Papier quadrillé. C'est la mécanique « prédire avant de voir » rendue visible, et c'est aussi la convention du carnet de labo : crayon pour l'hypothèse, encre pour le résultat.
-
-Le cadre millimétré est le second élément récurrent : c'est l'instrument dans lequel toute simulation se lit, avec la même échelle, le même chronomètre, la même ligne de sol.
-
-### Prédiction contre réalité
-
-Une prédiction par choix se traduit en repères dessinés au crayon. Pour « la lourde en premier », le moteur pose sur la ligne de sol, sous chaque bille, un chevron pointillé Ocre avec son rang en mono : `1` sous la bille de plomb, `2` sous la bille de plastique. Pour « en même temps », les deux chevrons portent `=`. Ces repères sont visibles avant le lâcher : la prédiction est déjà sur le papier.
-
-Quand une bille touche le sol, le moteur écrit à l'encre, au même endroit : une coche pleine Encre et le temps mesuré en mono (`0,64 s`). Si le rang prédit est démenti, le chiffre Ocre reçoit des hachures Ocre obliques : il est barré comme dans un carnet, pas effacé, et pas rougi. Puis le texte de révélation arrive, propre à l'option choisie : « Presque tout le monde répond ça. Regarde pourquoi c'est faux. » Au ralenti ×4, la chute de 2 m dure 2,6 s à l'écran et le chronomètre s'égrène, ce qui laisse voir que les deux billes restent à la même hauteur tout du long.
-
-Une prédiction fausse ne produit aucun signal de sanction : pas de vibration, pas de son, pas de couleur d'alerte, pas de croix. Le seul événement visuel est le passage du crayon à l'encre.
-
-### La page de carnet
-
-Une feuille Papier pleine largeur, bord Encre de 1,5 px, arrondi de 4 px (c'est une page, pas une carte), avec 24 px de marge intérieure. En haut, une ligne mono 13 px Graphite : `PAGE 1` à gauche, la date à droite (`4 sept. 2026`). Le titre en Atkinson 22 px Bold : « Deux billes, une seule chute ».
-
-Sous le titre, **le croquis** : la vignette du cadre millimétré à l'état final, les deux billes au sol, les chevrons Ocre de la prédiction et les coches Encre de la réalité avec les temps mesurés. Puis **l'équation découverte**, `a = g` en STIX Two 28 px, centrée, avec sa légende mono : « l'accélération ne dépend pas de la masse ». Puis deux lignes : « Tu avais prédit : la lourde. Tu en étais sûr. » en Ocre, et « Observé : en même temps, 0,64 s. » en Encre. Puis la phrase à retenir, en Atkinson 15 px. Le numéro de page en mono dans le coin inférieur droit.
-
-La page est composée avec les mêmes polices que le reste de l'app : aucune police manuscrite. Ce qui fait « carnet », c'est la grille, les deux traits et le fait que la page reste.
+**Le double trait.** Un pointillé Ocre pour ce qu'on croyait, un trait plein Encre pour ce qui s'est passé, et entre les deux, l'écart. Il apparaît partout où la leçon compare une idée à une mesure : les chevrons posés sous les billes avant le lâcher, les coches à l'encre à l'atterrissage, le rappel souligné de la prédiction, le contour pointillé de l'option qu'on avait choisie face au contour plein de la bonne, le croquis de la page de carnet, et l'icône de l'app. C'est la mécanique « prédire avant de voir » rendue visible, et c'est la convention du carnet de labo.
 
 ### Ce qu'on refuse et pourquoi
 
-- Pas de texture papier ni de grain : coûteux à rendre plein écran sur un téléphone d'entrée de gamme, et vite kitsch. Le papier se dit par la couleur, la grille et la typographie.
+- Pas de texture papier ni de grain : coûteux à rendre plein écran, vite kitsch. Le papier se dit par la couleur, la grille et la typographie.
 - Pas de police manuscrite : elle sonne faux, rend mal les accents et tire vers le registre enfantin.
-- Pas de rouge ni de vert de verdict, pas de confettis, pas de mascotte, pas de barre de progression à pourcentage : ce sont les codes des apps qu'on ne veut pas imiter.
-- Pas de mode sombre au jalon 1 : la direction est celle d'une feuille de papier, et une seule feuille bien faite vaut mieux que deux thèmes moyens.
+- Pas de rouge ni de vert de verdict, pas de confettis, pas de mascotte, pas de barre de progression à pourcentage.
+- Pas de mode sombre au jalon 1 : une seule feuille bien faite.
 - Pas d'animation d'interface au-delà des transitions d'étape : la seule animation qui compte est la chute des billes, exacte, à 60 fps.
+
+Test à faire avant validation définitive : la palette sur un téléphone Android bas de gamme à dalle chaude, pour s'assurer que Papier reste froid et que l'Ocre reste brun, loin d'un terracotta.
+
+---
+
+## Annexe A — Spécification des écrans
+
+Tout ce qui suit sert au développeur. Les dimensions sont en dp, calées sur un écran de référence de 360 × 640 dp (environ 568 dp utiles sous la barre d'état et la zone sûre).
+
+### Styles
+
+| Rôle | Police | Taille / interligne | Couleur |
+|---|---|---|---|
+| Question, titre de page | Atkinson Bold | 22 / 28 | Encre |
+| Texte courant, correction, phrase à retenir | Atkinson Regular | 15 / 22 | Encre |
+| Texte de révélation | Atkinson Regular | 17 / 24 | Encre |
+| Option | Atkinson Regular ; Bold si choisie | 17 / 24 | Encre ; Graphite en lecture seule |
+| Bouton | Atkinson Bold | 17 | Papier sur Encre ; Encre sur Papier |
+| Rappel de la prédiction | Atkinson Regular | 15 / 22 | Ocre |
+| Étiquette (`PAGE 1`, `JUSTE`, `CE QUI TROMPE`) | Plex Mono Regular, capitales, interlettrage 0,06 em | 13 / 16 | Graphite ; Ocre pour `CE QUI TROMPE` |
+| Lecture (chronomètre, valeur, temps mesuré, date) | Plex Mono Regular ; Medium pendant un réglage et pour le chronomètre | 15 / 20 | Encre ; unité en Graphite |
+| Rang d'un chevron, échelle du cadre | Plex Mono Regular | 13 | Ocre ; Graphite |
+| Symbole d'équation | STIX Two Italic ; opérateurs en Regular | 28 | Encre |
+| Cotation d'un terme | STIX Two Italic 17 pour le symbole, Atkinson Regular 15 pour le sens | 17 / 22 | Encre ; Graphite |
+
+Les capitales forcées ne s'appliquent qu'à des étiquettes sans valeur ni unité : une lecture s'écrit toujours `t = 0,32 s`, jamais en capitales. Marges latérales 16, base verticale 8 (espacements 8, 16, 24, 40). Toute zone tactile fait au moins 48 × 48 ; quand le dessin est plus petit, la zone est étendue par `hitSlop`.
+
+### Composants
+
+**La règle.** Bande de 48 de haut (24 dessinés), pleine largeur, filet bas Encre 1,5. Huit graduations : passée = trait Encre 1,5 × 14 ; courante = trait Encre 1,5 × 24 surmonté d'un point Vert-de-gris de 6 ; à venir = trait Graphite 1,5 × 8. Pas de libellé ; un appui long affiche le nom de l'étape en étiquette. Toucher une graduation passée y ramène (`hitSlop` horizontal 12). La graduation « exercice » couvre tous les exercices et ramène au premier ; « correction » ramène à la dernière correction vue.
+
+**Le cadre.** Bord Encre 1,5, arrondi 12, fond Papier. Grille : lignes fines Trame 1, lignes renforcées Graphite 1 tous les dix carreaux ; le pas (1 cm, 10 cm, 1 m, 10 m) est choisi par l'interface pour ne jamais dépasser quarante lignes, et la grille est enregistrée dans une Picture Skia, réenregistrée seulement quand le pas change. Échelle en Plex Mono 13 Graphite sur le bord gauche (`0 m`, `1 m`, `2 m`), ligne de sol Encre 2. Corps : disques de rayon fixe 12 (le rayon réel serait invisible), placés à 1/3 et 2/3 de la largeur ; la bille de plomb est un disque Encre plein, la bille de plastique un disque Papier cerclé d'Encre 2. Chronomètre en haut à droite, Plex Mono Medium 15 Encre, affichant le temps simulé (pas le temps écran), formaté à la virgule dans un worklet. Tout texte dans le cadre est du texte Skia, avec la police chargée par `useFont` depuis le fichier du paquet `@expo-google-fonts/ibm-plex-mono`. Hauteur du cadre : `min(55 % de la zone sous la règle, largeur × 1,1)` en observation et bac à sable, 35 % en explication, 40 % à l'accroche, vignette sur la page de carnet.
+
+**La ligne d'option.** Hauteur 56, pleine largeur. À gauche, une case 28 × 28 contenant la lettre `a.` `b.` `c.` en Plex Mono 13 Graphite ; texte en Atkinson 17 ; filet bas Trame 1. Pressée : fond Trame. Choisie : case remplie Encre avec lettre Papier, texte Bold, filet bas Encre 2. Lecture seule (après le verdict) : texte Graphite, case vide. Correction : l'option qu'on avait choisie prend un contour pointillé Ocre 2 (le crayon) ; la bonne option prend un contour plein Encre 2 et l'étiquette `JUSTE` à droite ; si c'est la même, le pointillé Ocre est dessiné à l'intérieur du contour Encre.
+
+**Le pari.** Étiquette `TON PARI` puis un contrôle segmenté de trois cellules de 48 : « au hasard · je pense · c'est sûr », bord Encre 1,5, arrondi 8, texte Atkinson 15 Encre, séparateurs Encre 1,5. Choisie : cellule remplie Encre, texte Papier Bold. Formulations épicènes, sans accord de genre.
+
+**Les boutons.** Principal : pleine largeur, 52, Encre, texte Papier, arrondi 8 ; désactivé : fond Trame, texte Graphite ; pressé : Encre à 85 %. Secondaire : 48, fond Papier, bord Encre 1,5, texte Encre ; pressé : fond Trame. Il n'y a qu'un bouton principal par écran, toujours en bas de la feuille.
+
+**La réglette.** Étiquette Atkinson 15 à gauche, valeur Plex Mono 15 à droite (Medium pendant le geste) avec l'unité en Graphite ; piste Trame 2 sur une bande de 48 ; poignée Vert-de-gris de 28 cerclée d'Encre 2, `hitSlop` 10 ; bornes en Plex Mono 11 Graphite sous la piste. La valeur suit le doigt dans une valeur partagée ; la simulation est recalculée à la fin du geste, ou au plus dix fois par seconde pendant le geste.
+
+**L'interrupteur.** Zone 64 × 48, dessin 52 × 28 : piste Trame et bouton Papier cerclé d'Encre 2 au repos ; piste Vert-de-gris enclenché, bouton identique. Libellés `sans` et `avec` en Plex Mono 13 de part et d'autre, celui qui est actif en Encre, l'autre en Graphite.
+
+**La ligne d'équation.** Bande de 64 délimitée par deux filets Trame, qui ne porte que l'équation : symboles STIX Two Italic 28, opérateurs Regular, fraction avec barre Encre 1,5 et numérateur / dénominateur en 24. Sous la bande, une seule cotation à la fois : le symbole qui vient d'apparaître en STIX Italic 17, puis son sens en Atkinson 15 Graphite. Chaque terme apparaît en fondu de 120 ms à la pression ; un symbole barré reçoit un trait Encre 2 oblique, instantané : dans un carnet, on corrige le brouillon à l'encre. La ligne finale s'écrit d'un coup, en Encre.
+
+### Les huit écrans
+
+| Étape | Contenu | Bouton principal et condition | Défilement |
+|---|---|---|---|
+| 1. Accroche | Le fait, Atkinson 22 Bold, aligné en haut ; le cadre à 40 % avec les billes suspendues, sans chevron. | « Continuer », toujours actif. | Non |
+| 2. Prédiction | Question ; trois lignes d'option ; le pari. | « Poser ma prédiction », actif quand option et pari sont choisis. Après le verdict, l'écran est en lecture seule et le bouton devient « Revoir la chute ». | Non |
+| 3. Observation | Rappel de la prédiction (Ocre, deux lignes max, souligné pointillé Ocre 1,5) ; le cadre à t = 0, billes suspendues, chevrons déjà posés ; zone de révélation ; boutons. | Avant le lâcher : « Lâcher les billes » (libellé fourni par la leçon). Après l'atterrissage : rangée secondaire « Rejouer » et « Ralenti ×4 » (qui bascule en « Temps réel »), puis principal « Voir pourquoi ». | Oui ; à l'atterrissage la feuille défile pour montrer la révélation et le bouton. |
+| 4. Explication | Le cadre à 35 %, image finale figée (billes au sol, coches, temps) ; toucher le cadre rejoue ; paragraphes ; la ligne d'équation. | « Terme suivant » tant qu'il reste une étape ; puis « Passer aux exercices ». | Oui |
+| 5. Exercice | Comme la prédiction. | « Répondre », même condition. | Non |
+| 6. Correction | Les options avec leurs contours ; une ligne d'issue ; si le pari était « c'est sûr » et la réponse fausse, l'étiquette `CE QUI TROMPE` en Ocre et le paragraphe de l'option choisie ; puis le raisonnement en liste numérotée (numéros Plex Mono Graphite), toujours. | « Exercice suivant » ; après le dernier, « Passer au bac à sable ». | Oui |
+| 7. Bac à sable | Le cadre qui rejoue en boucle ; les réglettes et l'interrupteur ; « Trois défis, si tu veux » et leurs textes, sans case ni compteur. | « Remplir la page ». | Oui |
+| 8. Carnet | La page (voir plus bas). | « Refaire la leçon », en secondaire : la page reste. | Oui si la page dépasse. |
+
+Les quatre issues d'un pari, en Encre, en étiquette sous l'option, sans autre signal : « c'est sûr » et juste → `JUSTE, ET TU LE SAVAIS` ; « je pense » et juste → `JUSTE` ; « au hasard » et juste → `JUSTE, MAIS AU HASARD : À REVOIR` ; « c'est sûr » et faux → `CE QUI TROMPE` en Ocre, puis la correction ; « je pense » ou « au hasard » et faux → la correction. Ce qui est marqué « à revoir » est repris sur la page de carnet.
+
+### Prédiction contre réalité
+
+Avant le lâcher, la prédiction est déjà sur le papier : sous chaque bille, sur la ligne de sol, un chevron pointillé Ocre 1,5 (tirets 2 / 2) avec son rang en Plex Mono 13 Ocre, `1` sous celle qu'on croit première, `2` sous l'autre, `=` sous les deux pour « en même temps ». Posés instantanément à l'ouverture de l'écran.
+
+Quand une bille touche le sol, une coche Encre 2 (deux segments, 12 × 9) se trace en 180 ms au même endroit, et le temps mesuré s'écrit en Plex Mono 13 Encre. Si le rang prédit est démenti, un trait oblique Encre 1,5 barre le chiffre Ocre, instantanément : l'encre barre le crayon, rien n'est effacé, rien n'est rougi. Puis le texte de révélation propre à l'option choisie apparaît sous le cadre. Au ralenti ×4, la chute de 2 m dure 2,6 s à l'écran, et le chronomètre laisse voir que les deux billes restent à la même hauteur tout du long.
+
+Une prédiction fausse ne produit aucun signal de sanction : pas de vibration, pas de son, pas de couleur d'alerte. Le seul événement visuel est le passage du crayon à l'encre.
+
+### La page de carnet
+
+L'écran de carnet a un fond Trame : une feuille posée sur un plan. La page est Papier, bord Encre 1,5, arrondi 4, marges 16, marge intérieure 20. Son en-tête est une bande de 32 quadrillée en Trame (comme la première ligne d'un carnet), qui porte `PAGE 1` à gauche et la date à droite en Plex Mono 13 Graphite. Puis le titre en Atkinson 22 Bold. Puis **le croquis** : la vignette du cadre à l'état final, avec les chevrons Ocre et les coches Encre. Puis **l'équation découverte**, `a = g` en STIX Two 28, centrée, avec sa légende en Plex Mono 13 Graphite. Puis deux lignes : « Tu avais prédit : la lourde. Tu avais dit : c'est sûr. » en Ocre, et « Observé : en même temps, 0,64 s. » en Encre. Puis, s'il y a lieu, `À REVOIR` suivi du titre des exercices concernés. Puis la phrase à retenir en Atkinson 15. Le numéro de page en Plex Mono 13 dans le coin inférieur droit.
+
+Mêmes polices que le reste de l'app, aucune police manuscrite. Ce qui fait « carnet », c'est le quadrillage, les deux traits et le fait que la page reste.
+
+### Icône
+
+Fond Encre. Deux courbes de chute qui se croisent : l'une Papier en trait plein, l'autre Ocre en pointillé, toutes deux épaisses d'un douzième de la largeur. Pas de grille : elle ne survit pas à 48 px. À vérifier à 48 px dans le masque rond d'Android et le squircle d'iOS.
 
 ---
 
@@ -100,156 +141,158 @@ La page est composée avec les mêmes polices que le reste de l'app : aucune pol
 ### Principes
 
 - Trois zones étanches : `content/` (données pures), `physics/` et `engine/` (moteur, sans React ni Skia), `ui/` (React, Reanimated, Skia). Le contrat entre elles est `schema/`, qui ne contient que des types.
-- Le moteur ne connaît aucune leçon par son nom. Ajouter une leçon, c'est ajouter un fichier dans `content/lessons/` et une ligne dans `content/index.ts`.
-- Simuler, c'est calculer une trajectoire ; observer, c'est la rejouer. La physique produit des tableaux échantillonnés une fois, et le rendu ne fait que les lire à la vitesse demandée. Le ralenti, le rejouer et le retour arrière sont gratuits.
-- Rien ne traverse le pont React par frame : l'horloge est une valeur partagée Reanimated, les positions sont dérivées dans des worklets, Skia les lit directement.
-- Uniquement ce que le jalon 1 exige. Les emplacements des jalons suivants sont indiqués en commentaire, sans fichier.
-- Code en anglais, contenu et commentaires en français (voir Conventions).
+- Le moteur ne connaît aucune leçon par son nom. Ajouter une leçon, c'est ajouter un fichier dans `content/lessons/` et une ligne dans `content/index.ts`. Ajouter un concept nouveau à la carte des résonances, c'est une ligne dans le vocabulaire partagé `schema/concepts.ts`.
+- Simuler, c'est calculer une trajectoire ; observer, c'est la rejouer. La physique produit des tableaux échantillonnés une fois, le rendu ne fait que les lire à la vitesse demandée. Le ralenti, le rejouer et le retour arrière sont gratuits.
+- Rien ne traverse le pont React par frame : l'horloge est une valeur partagée Reanimated, les positions sont dérivées dans des worklets, Skia les lit directement. Pendant un geste sur une réglette, la valeur suit le doigt dans une valeur partagée et la simulation n'est recalculée qu'à la fin du geste, ou au plus dix fois par seconde.
+- Uniquement ce que le jalon 1 exige. Les emplacements des jalons suivants sont indiqués en commentaire, sans fichier ni dossier.
+- Code en anglais, contenu et commentaires en français.
 
 ### Arborescence
 
 ```
 .
 ├── app/                                   # expo-router : uniquement les écrans routés
-│   ├── _layout.tsx                        # racine : chargement des polices, GestureHandlerRootView, SafeAreaProvider, écran de lancement
+│   ├── _layout.tsx                        # racine : garde l'écran de lancement jusqu'aux polices, GestureHandlerRootView, Stack sans en-tête
 │   └── index.tsx                          # jalon 1 : monte LessonScreen avec la seule leçon du registre
-│                                          # (jalon 3 : notebook.tsx ; jalon 4 : accueil, lesson/[id].tsx ; jalon 5 : resonances.tsx)
+│                                          # (jalon 3 : notebook.tsx ; jalon 4 : accueil et lesson/[id].tsx ; jalon 5 : resonances.tsx)
 ├── assets/
-│   ├── icon.png                           # le double trait sur carré quadrillé
+│   ├── icon.png                           # le double trait sur fond Encre
 │   ├── adaptive-icon.png
-│   └── splash-icon.png
+│   └── splash-icon.png                    # consommé par le plugin expo-splash-screen
 ├── src/
-│   ├── schema/                            # LE CONTRAT : types seulement, aucune logique, importé par content/, engine/ et ui/
-│   │   ├── lesson.ts                      # Lesson et ses huit étapes
-│   │   ├── prediction.ts                  # Prediction : choix (jalon 1), trace et curseur (réservés)
-│   │   ├── simulation.ts                  # SimulationModuleId, contrat de chaque module (params, observables, références)
-│   │   ├── explanation.ts                 # blocs d'explication, équation terme par terme
+│   ├── schema/                            # LE CONTRAT : types seulement, aucune logique ; importé par content/, physics/, engine/ et ui/
+│   │   ├── lesson.ts                      # Lesson<M>, AnyLesson, Observation
+│   │   ├── prediction.ts                  # PredictionChoice<M> (jalon 2 : trajectoire tracée, curseur)
+│   │   ├── simulation.ts                  # contrat de chaque module : params, observables, result, références ; convention d'axes
+│   │   ├── explanation.ts                 # blocs d'explication, jetons d'équation (dont fraction), étapes
 │   │   ├── exercise.ts                    # exercices, options, corrections
-│   │   ├── sandbox.ts                     # curseurs et interrupteurs liés aux paramètres de simulation
-│   │   ├── notebook.ts                    # ce que la leçon fournit à la page de carnet
-│   │   ├── concepts.ts                    # ConceptId : union de littéraux (jalon 5 : la carte les relie)
-│   │   └── session.ts                     # SessionJournal, Confidence, StepId : ce que le moteur enregistre par séance
+│   │   ├── sandbox.ts                     # réglettes (linéaires ou logarithmiques) et interrupteurs liés aux paramètres
+│   │   ├── notebook.ts                    # NotebookSpec (fourni par la leçon) et NotebookPage (produit par le moteur)
+│   │   ├── concepts.ts                    # ConceptId : vocabulaire partagé (jalon 5 : la carte les relie)
+│   │   └── session.ts                     # SessionJournal<M>, Confidence, ConfidenceOutcome, StepId
 │   ├── content/                           # CONTENU : données pures, n'importe que src/schema
 │   │   ├── lessons/
 │   │   │   └── free-fall-two-balls.ts     # « Quelle bille touche le sol en premier ? », satisfies Lesson<'constantForceMotion'>
-│   │   └── index.ts                       # registre : ReadonlyArray<Lesson> (jalon 2 : deux entrées de plus)
+│   │   └── index.ts                       # registre : ReadonlyArray<AnyLesson> (jalon 2 : deux entrées de plus)
 │   ├── physics/                           # MOTEUR PHYSIQUE : fonctions pures, zéro React, zéro Skia, testé sous jest
-│   │   ├── integrators.ts                 # Euler semi-implicite à pas fixe, commenté (équation, schéma, unités)
-│   │   ├── trajectory.ts                  # Trajectory : échantillons (t, x, y, vx, vy) en Float32Array, sampleAt(t), landing
+│   │   ├── integrators.ts                 # Euler semi-implicite à pas fixe, commenté (équation, schéma, unités, cas limites)
+│   │   ├── trajectory.ts                  # sampleAt(track, t) : interpolation linéaire dans les Float32Array
 │   │   ├── modules/
+│   │   │   ├── module.ts                  # interface SimulationModule<M> : simulate, observe, applyParamRef, unitOf, describe
 │   │   │   ├── constant-force-motion.ts   # chute libre, tir balistique, particule chargée ; traînée quadratique optionnelle
-│   │   │   ├── module.ts                  # interface SimulationModule<M> : simulate, observe, applyParamRef, gridStep
-│   │   │   └── index.ts                   # registre : { constantForceMotion } (jalon 2+ : autres modules)
+│   │   │   └── index.ts                   # registre typé : moduleFor(simulation) avec rétrécissement sur le discriminant `module`
 │   │   └── __tests__/
-│   │       ├── integrators.test.ts        # convergence sur la chute libre analytique, stabilité avec traînée
-│   │       └── constant-force-motion.test.ts  # égalité sans air, écart avec air, g négatif, masse nulle
+│   │       ├── integrators.test.ts        # convergence sur la chute libre analytique, stabilité avec traînée, masse nulle
+│   │       └── constant-force-motion.test.ts  # égalité sans air, écart avec air, g négatif, corps sans traînée, force propre
 │   ├── engine/                            # MOTEUR DE LEÇON : déroule les huit étapes, indépendant de toute leçon, sans React
-│   │   ├── lesson-machine.ts              # réducteur pur (SessionJournal, event) → SessionJournal ; les huit étapes, les exercices en boucle
-│   │   ├── verdict.ts                     # compare la prédiction à l'observable calculé par le module
-│   │   ├── confidence.ts                  # pari de confiance : (confiance, juste) → récompense et suite (rien, à revoir, remédiation)
-│   │   ├── notebook-page.ts               # (Lesson, SessionJournal, résultat) → NotebookPage
+│   │   ├── lesson-machine.ts              # réducteur pur reduce(lesson, journal, event) → journal
+│   │   ├── verdict.ts                     # observedOptionId(prediction, observables) par égalité structurelle
+│   │   ├── confidence.ts                  # la table des six couples (confiance × juste) → ConfidenceOutcome
+│   │   ├── notebook-page.ts               # (lesson, journal, result, date, numéro) → NotebookPage
 │   │   ├── validate-lesson.ts             # invariants non exprimables par les types ; exécuté en dev et en test
 │   │   └── __tests__/
 │   │       ├── lesson-machine.test.ts
 │   │       ├── confidence.test.ts
 │   │       └── validate-lesson.test.ts    # valide toutes les leçons du registre
 │   ├── state/
-│   │   ├── session-store.ts               # zustand : le SessionJournal de la séance en cours, actions = events de la machine
-│   │   └── sandbox-store.ts               # zustand : paramètres courants du bac à sable, trajectoires recalculées
+│   │   └── session-store.ts               # zustand : le SessionJournal de la séance en cours, actions = events du réducteur
 │   │                                      # (jalon 6 : persistance SQLite branchée ici)
 │   ├── ui/
+│   │   ├── copy.ts                        # textes fixes de l'interface (boutons, étiquettes, gabarits) : français, hors contenu
 │   │   ├── theme/
-│   │   │   ├── colors.ts                  # Papier, Trame, Encre, Graphite, Ocre, Phosphore
-│   │   │   ├── typography.ts              # familles, échelle 13/15/17/22/28, interlignes
-│   │   │   ├── spacing.ts                 # base 8, marges 20, rayons 8 et 12, épaisseurs 1 / 1,5 / 2
-│   │   │   └── fonts.ts                   # useAppFonts() : les sept fichiers via @expo-google-fonts
+│   │   │   ├── colors.ts                  # Papier, Trame, Encre, Graphite, Ocre, Vert-de-gris
+│   │   │   ├── typography.ts              # familles, tailles et interlignes du tableau des styles
+│   │   │   ├── spacing.ts                 # base 8, marges 16, rayons 4 / 8 / 12, épaisseurs 1 / 1,5 / 2, zones tactiles 48
+│   │   │   └── use-app-fonts.ts           # les six fichiers via @expo-google-fonts et expo-font
 │   │   ├── components/
 │   │   │   ├── StepRuler.tsx              # la règle à huit graduations
 │   │   │   ├── PrimaryButton.tsx
 │   │   │   ├── SecondaryButton.tsx
-│   │   │   ├── OptionRow.tsx              # ligne d'option 56 px
-│   │   │   ├── ConfidencePicker.tsx       # je devine · je pense · je suis sûr
-│   │   │   ├── RuleSlider.tsx             # la réglette (gesture-handler + reanimated)
+│   │   │   ├── OptionLine.tsx             # la ligne de carnet à lettre, ses états
+│   │   │   ├── ConfidencePicker.tsx       # au hasard · je pense · c'est sûr
+│   │   │   ├── OutcomeLabel.tsx           # JUSTE, ET TU LE SAVAIS, etc.
+│   │   │   ├── RuleSlider.tsx             # la réglette (gesture-handler + reanimated), linéaire ou logarithmique
 │   │   │   ├── LabSwitch.tsx              # l'interrupteur sans / avec
-│   │   │   ├── EquationLine.tsx           # bande d'équation, termes STIX, cotations mono
+│   │   │   ├── EquationLine.tsx           # bande d'équation, fraction, trait qui barre, cotation courante
 │   │   │   ├── Readout.tsx                # valeur mono + unité Graphite
-│   │   │   └── Prose.tsx                  # texte courant Atkinson 15
+│   │   │   └── Prose.tsx                  # texte courant
 │   │   ├── simulation/                    # RENDU SKIA
 │   │   │   ├── SimulationCanvas.tsx       # le cadre : grille en Picture, échelle, sol, corps, repères, chronomètre
-│   │   │   ├── usePlayback.ts             # horloge partagée : play, pause, vitesse, rejouer, boucle ; useFrameCallback
-│   │   │   ├── worldToFrame.ts            # mètres → pixels du cadre, choix du pas de grille
-│   │   │   ├── PredictionMarks.tsx        # chevrons Ocre pointillés, rangs, hachures d'écart
-│   │   │   └── LandingMarks.tsx           # coches Encre et temps mesurés
-│   │   ├── steps/                         # un composant par étape, chacun ne lit que la leçon et le journal
+│   │   │   ├── use-playback.ts            # horloge partagée : play, pause, vitesse, rejouer, boucle ; useFrameCallback ; émet observed une fois
+│   │   │   ├── use-canvas-font.ts         # useFont sur le .ttf d'IBM Plex Mono du paquet, pour le texte Skia
+│   │   │   ├── world-to-frame.ts          # mètres → pixels du cadre, choix du pas de grille depuis bounds_m
+│   │   │   ├── PredictionMarks.tsx        # chevrons Ocre pointillés, rangs, trait qui barre
+│   │   │   └── LandingMarks.tsx           # coches Encre tracées en 180 ms, temps mesurés
+│   │   ├── steps/                         # un composant par étape
 │   │   │   ├── HookStep.tsx
 │   │   │   ├── PredictionStep.tsx
 │   │   │   ├── ObservationStep.tsx
 │   │   │   ├── ExplanationStep.tsx
 │   │   │   ├── ExerciseStep.tsx
 │   │   │   ├── CorrectionStep.tsx
-│   │   │   ├── SandboxStep.tsx
-│   │   │   └── NotebookStep.tsx           # affiche la NotebookPage (jalon 3 : réutilisé par l'écran carnet)
+│   │   │   ├── SandboxStep.tsx            # paramètres locaux (useState + valeurs partagées), pas de store
+│   │   │   └── NotebookStep.tsx           # dessine une NotebookPage (jalon 3 : réutilisé par l'écran carnet)
 │   │   └── screens/
-│   │       └── LessonScreen.tsx           # relie la machine, le store et l'étape courante
-│   └── storage/                           # (jalon 6) expo-sqlite : vide au jalon 1, non installé
+│   │       └── LessonScreen.tsx           # relie la leçon, le store, le résultat de simulation (useMemo) et l'étape courante
 ├── .gitignore
-├── app.json                               # nom, schéma, orientation portrait, icônes, plugins expo-router et expo-font, newArchEnabled
-├── babel.config.js                        # preset babel-preset-expo ; react-native-reanimated/plugin en dernier
-├── jest.config.js                         # preset jest-expo ; testMatch sur src/**/__tests__
-├── package.json
-├── tsconfig.json                          # extends expo/tsconfig.base, strict, noUncheckedIndexedAccess, alias @/* → src/*
+├── app.json                               # nom, schéma, portrait, icônes, plugins expo-router et expo-splash-screen (fond #F3F5F2)
+├── jest.config.js                         # preset jest-expo/node ; testMatch sur src/**/__tests__
+├── package.json                           # "main": "expo-router/entry"
+├── tsconfig.json                          # extends expo/tsconfig.base, strict, noUncheckedIndexedAccess, paths @/* → src/*
 └── README.md
 ```
 
+Pas de `babel.config.js` : `babel-preset-expo` 57 ajoute lui-même le plugin worklets quand le paquet est installé, et les gabarits Expo 57 n'en ont pas. Pas de clé `newArchEnabled` : depuis React Native 0.82, la nouvelle architecture est la seule, ce qui exclut d'office tout paquet natif hérité.
+
 ### Conventions
 
-- **Langue.** Identifiants, noms de fichiers et de types en anglais : les bibliothèques, les API et les futurs contributeurs le sont, et les accents n'ont pas leur place dans un identifiant. Tout ce qui est lu par l'utilisateur est en français, dans `content/`. Les commentaires, en particulier le raisonnement physique, sont en français. Glossaire fixé : accroche → `hook`, prédiction → `prediction`, observation → `observation`, explication → `explanation`, exercice → `exercise`, correction → `correction`, bac à sable → `sandbox`, carnet → `notebook`, pari de confiance → `confidence`, carte des résonances → `resonances`, module de simulation → `SimulationModule`.
-- **Format des leçons.** Un fichier TypeScript par leçon, exporté avec `satisfies Lesson<'…'>` : vérification à la compilation, autocomplétion, références de paramètres typées, aucun analyseur JSON à écrire. Un fichier de leçon n'exporte qu'une valeur, sans fonction. Les invariants que les types n'expriment pas (plages, unicité des identifiants, cohérence entre prédiction et simulation) sont vérifiés par `engine/validate-lesson.ts`, en développement au démarrage et dans un test qui parcourt le registre.
-- **Nommage.** Fichiers en kebab-case ; composants React en PascalCase avec extension `.tsx` ; un composant par fichier. Les identifiants de contenu (leçons, corps, options, concepts) sont des slugs français : `'chute-libre-deux-billes'`, `'plomb'`, `'lourde'`.
-- **Alias.** `@/*` → `src/*`, déclaré dans `tsconfig.json` (Metro le résout via `babel-preset-expo`).
-- **Tokens de design.** Uniquement dans `ui/theme/`. Aucun hex, aucune taille de police ailleurs. Le contenu ne contient jamais de couleur, de pixel ni de durée d'animation.
-- **Machine à états.** `engine/lesson-machine.ts` est un réducteur pur sur le `SessionJournal` ; le store zustand ne fait que l'héberger et exposer les événements. Cela rend les huit étapes testables sans React et la leçon reprenable à n'importe quelle étape.
+- **Langue.** Identifiants, noms de fichiers et de types en anglais ; tout ce qui est lu par l'utilisateur est en français : dans `content/` pour le contenu, dans `ui/copy.ts` pour les textes fixes de l'interface (« Rejouer », « Ralenti ×4 », `JUSTE`, gabarit « Ta prédiction : {option}. Tu avais dit : {pari}. »). Les commentaires, en particulier le raisonnement physique, sont en français. Glossaire fixé : accroche → `hook`, prédiction → `prediction`, observation → `observation`, explication → `explanation`, exercice → `exercise`, correction → `correction`, bac à sable → `sandbox`, carnet → `notebook`, pari de confiance → `confidence`, carte des résonances → `resonances`, module de simulation → `SimulationModule`.
+- **Format des leçons.** Un fichier TypeScript par leçon, exporté avec `satisfies Lesson<'…'>` : vérification à la compilation, autocomplétion, références typées, aucun analyseur JSON. Un fichier de leçon n'exporte qu'une valeur, sans fonction. Les invariants que les types n'expriment pas sont vérifiés par `engine/validate-lesson.ts`, en développement au démarrage et dans un test qui parcourt le registre.
+- **Nommage.** Fichiers, hooks et utilitaires en kebab-case ; composants React en PascalCase avec extension `.tsx`, un par fichier. Identifiants de contenu (leçons, corps, options, contrôles, concepts) en slugs français : `'chute-libre-deux-billes'`, `'plomb'`, `'lourde'`.
+- **Alias.** `@/*` → `src/*` dans `tsconfig.json`, résolu par le résolveur Metro d'Expo (activé par défaut) et par `jest-expo`, qui lit `tsconfig.json`.
+- **Tokens de design.** Uniquement dans `ui/theme/`. Aucun hex, aucune taille de police ailleurs. Le contenu ne contient jamais de couleur, de pixel ni de durée.
+- **Machine à états.** `engine/lesson-machine.ts` est un réducteur pur `reduce(lesson, journal, event)` : il a besoin de la leçon pour savoir combien d'exercices il reste et quelle option est juste. Le store zustand ne fait que l'héberger et exposer les événements.
 - **Pari de confiance.** `engine/confidence.ts` contient la seule table qui décide ce que produit chaque couple (confiance, juste) ; ni l'interface ni le contenu n'ont d'avis dessus.
-- **Polices.** Via les paquets `@expo-google-fonts`, chargées dans `app/_layout.tsx` par `useAppFonts()`. Aucun `.ttf` dans le dépôt.
+- **Polices.** Via les paquets `@expo-google-fonts`, chargées par `use-app-fonts.ts` dans `app/_layout.tsx`, écran de lancement maintenu par `expo-splash-screen` jusqu'à disponibilité. Le texte Skia du cadre utilise `useFont` sur le fichier `.ttf` du paquet IBM Plex Mono, parce que Skia ne voit pas les polices enregistrées par expo-font. Aucun `.ttf` dans le dépôt.
 
 ### Flux d'une leçon
 
 1. `app/index.tsx` prend la première leçon de `content/index.ts` et la donne à `LessonScreen`. En développement, `validateLesson` est exécuté sur le registre au démarrage et lève une erreur lisible en cas de défaut.
-2. `LessonScreen` lit l'étape courante dans `session-store` et monte le composant correspondant de `ui/steps/`. Chaque étape reçoit la leçon et le journal, et renvoie des événements (`predict`, `observed`, `answer`, `next`, `back`, `sandboxChange`) que le réducteur applique.
-3. À l'événement `predict`, `LessonScreen` demande au module de simulation `simulate(params)` : intégration à pas fixe des deux billes, résultat sous forme de `Trajectory` par corps plus les temps d'atterrissage interpolés. C'est un calcul de quelques millisecondes, fait une fois.
-4. `ObservationStep` passe les trajectoires à `SimulationCanvas`. `usePlayback` tient une valeur partagée `t` avancée dans `useFrameCallback` de `dt × vitesse` ; les positions sont dérivées par `sampleAt(t)` dans un worklet, et les éléments Skia lisent ces valeurs dérivées. Rien ne repasse par le thread JavaScript pendant la chute. Ralenti et rejouer ne touchent que `vitesse` et `t`.
-5. Quand toutes les billes ont atterri, `engine/verdict.ts` calcule l'observable (`firstToLand`) via `module.observe(result)`, trouve l'option de prédiction attendue et l'écrit dans le journal avec la prédiction et la confiance. `ObservationStep` affiche le texte de révélation de l'option choisie.
-6. Les exercices passent par le même réducteur ; `engine/confidence.ts` décide de la suite (récompense, « à revoir », remédiation).
-7. `SandboxStep` copie les paramètres dans `sandbox-store` ; chaque geste applique `module.applyParamRef(params, ref, value)` puis `simulate`, et le canvas rejoue en boucle.
-8. `engine/notebook-page.ts` compose la `NotebookPage` (titre, date, croquis = module + paramètres + résultat, équation issue de l'étape `result` de l'explication, prédiction, observé, confiance, phrase à retenir, numéro de page) et `NotebookStep` la dessine.
+2. `LessonScreen` obtient le module par `moduleFor(lesson.simulation)`, qui rétrécit le type sur le discriminant `module` de l'objet simulation (TypeScript ne rétrécit pas la leçon entière depuis une propriété imbriquée, vérifié avec un second module fictif), et calcule le résultat de simulation par `useMemo` sur les paramètres de la leçon : quelques millisecondes, déterministe, donc jamais stocké. Il lit l'étape courante dans `session-store` et monte le composant de `ui/steps/` correspondant. Chaque étape reçoit la leçon, le journal, et le résultat quand elle en a besoin ; elle renvoie des événements (`predict`, `launch`, `observed`, `answer`, `next`, `back`, `sandboxTouched`) que le réducteur applique.
+3. `ObservationStep` passe les pistes du résultat à `SimulationCanvas`. `use-playback.ts` tient une valeur partagée `t` avancée dans `useFrameCallback` de `dt × vitesse` ; les positions sont dérivées par `sampleAt` dans un worklet et les éléments Skia lisent ces valeurs dérivées. Rien ne repasse par le thread JavaScript pendant la chute. La vitesse de lecture est choisie par l'interface pour que la chute dure environ 2,5 s à l'écran, ramenée à un facteur rond (×2, ×4, ×10) pour le libellé du bouton. Quand `t` dépasse le dernier atterrissage, `use-playback.ts` émet `observed` une seule fois, par `runOnJS`.
+4. Sur `observed`, le réducteur appelle `verdict.ts` avec la prédiction et les observables du résultat, et fige dans le journal l'option confirmée, les observables et l'issue du pari. `ObservationStep` affiche le texte de révélation de l'option choisie.
+5. Les exercices passent par le même réducteur ; `confidence.ts` décide de l'issue de chaque réponse.
+6. `SandboxStep` garde une copie locale des paramètres ; chaque fin de geste applique `module.applyParamRef` puis recalcule le résultat, et le canvas rejoue en boucle. La grille est réenregistrée seulement quand `world-to-frame.ts` change de pas.
+7. `engine/notebook-page.ts` compose la `NotebookPage` et `NotebookStep` la dessine.
 
 Tests : `physics/` et `engine/` sont couverts par jest sans rendu ; l'interface n'est pas testée automatiquement au jalon 1.
 
 ### Dépendances
 
-Versions vérifiées sur npm le 4 septembre 2026. Les versions exactes des paquets natifs sont fixées par `npx expo install`, qui aligne chaque paquet sur le SDK.
+Versions figées par le SDK 57 d'Expo (`bundledNativeModules.json` d'`expo@57.0.20`, vérifié sur npm). `npx expo install` les impose ; on ne force jamais une version plus récente d'un paquet natif.
 
 | Paquet | Version | Rôle |
 |---|---|---|
-| `expo` | ~57.0 | SDK, managed workflow, nouvelle architecture activée |
-| `react-native` | 0.87 (fixée par le SDK) | |
-| `expo-router` | ~57.0 | navigation (un seul écran au jalon 1) |
-| `react-native-reanimated` | ~4.6 | horloge partagée, worklets, `useFrameCallback` |
-| `react-native-gesture-handler` | fixée par `expo install` | réglettes, gestes |
-| `@shopify/react-native-skia` | ~2.11 | rendu du cadre de simulation |
-| `zustand` | ^5.0 | état de séance et du bac à sable |
+| `expo` | ~57.0 | SDK, managed workflow |
+| `react-native` | 0.86 | figée par le SDK |
+| `expo-router`, `expo-linking` | ~57.0 | navigation (un seul écran au jalon 1) ; `expo-linking` est un pair obligatoire |
+| `expo-splash-screen` | ~57.0 | écran de lancement maintenu pendant le chargement des polices |
 | `expo-font`, `@expo-google-fonts/atkinson-hyperlegible`, `@expo-google-fonts/ibm-plex-mono`, `@expo-google-fonts/stix-two-text` | ~57.0, 0.4.x | polices |
-| `react-native-safe-area-context`, `react-native-screens` | fixées par `expo install` | requis par expo-router |
-| `jest-expo`, `jest`, `@types/jest` | ~57.0 | tests de `physics/` et `engine/` |
-| `typescript` | ~5.9 (voir question ouverte) | |
+| `react-native-reanimated`, `react-native-worklets` | ~4.5, 0.10 | horloge partagée, worklets, `useFrameCallback` ; worklets est requis par Reanimated 4 |
+| `react-native-gesture-handler` | ~2.32 | réglettes, gestes |
+| `@shopify/react-native-skia` | ~2.6 | rendu du cadre de simulation ; accepte des valeurs partagées Reanimated en props |
+| `react-native-screens`, `react-native-safe-area-context` | ~4.26, ~5.7 | requis par expo-router |
+| `zustand` | ^5.0 | état de séance |
+| `jest-expo`, `jest`, `@types/jest`, `@react-native/jest-preset` | ~57.0, ~29.7, ~29.5, ~0.86 | tests de `physics/` et `engine/`, preset `jest-expo/node` |
+| `typescript` | ~6.0 | version livrée par le gabarit Expo 57 (voir question ouverte 5) |
 | `expo-sqlite` | non installé au jalon 1 | jalon 6 |
 
 ### Risques
 
-- Skia et Reanimated évoluent vite : l'API des valeurs partagées lues par Skia doit être vérifiée sur la version installée avant d'écrire `SimulationCanvas`.
-- La nouvelle architecture React Native est activée par défaut avec le SDK 57 ; un paquet natif non compatible bloquerait la compilation, d'où le passage systématique par `expo install`.
+- Skia et Reanimated évoluent vite : l'API des valeurs partagées lues par Skia doit être vérifiée sur les versions figées avant d'écrire `SimulationCanvas`.
 - Le rendu à 60 fps ne se mesure que sur un vrai téléphone d'entrée de gamme, pas sur simulateur : prévoir un appareil Android bas de gamme pour le jalon 1.
-- STIX Two Text ne couvre pas la composition mathématique complète (fractions empilées) : l'équation `a = F/m` sera composée à la main dans `EquationLine` avec une barre de fraction dessinée. Suffisant pour la mécanique classique.
+- Le texte Skia dépend d'un fichier `.ttf` chargé à part des polices de l'interface : deux chemins de chargement pour la même police, à garder alignés.
+- STIX Two Text ne couvre pas la composition mathématique complète ; `EquationLine` compose à la main les lignes plates et une fraction simple, ce qui suffit pour la mécanique classique.
 
 ---
 
@@ -257,18 +300,18 @@ Versions vérifiées sur npm le 4 septembre 2026. Les versions exactes des paque
 
 ### Principes
 
-- Une leçon est une valeur, jamais du code : aucune fonction dans le schéma, uniquement des littéraux, des nombres et des tableaux.
-- Les unités sont dans les noms de champs (`_m`, `_s`, `_kg`, `_m_s2`) : impossible de confondre une hauteur en mètres et une hauteur en pixels.
-- Le module de simulation est un contrat typé : paramètres, observables et références de paramètres sont déclarés une fois par module, et la leçon est paramétrée par le module qu'elle utilise.
-- La bonne réponse d'une prédiction n'est pas écrite dans la leçon : chaque option déclare la valeur d'observable qu'elle affirme, et c'est la simulation qui tranche. Les exercices, eux, sont des questions rédigées et portent leur réponse.
-- Le pari de confiance appartient au moteur : le contenu fournit seulement de quoi remédier (ce qui trompe dans chaque mauvaise option).
-- Le journal de séance est un type à part : c'est ce que le moteur enregistre, jamais ce que l'auteur écrit.
+- Une leçon est une valeur, jamais du code : uniquement des littéraux, des nombres et des tableaux.
+- Les unités sont dans les noms de champs (`_m`, `_s`, `_kg`, `_m_s2`, `_N`) ; la convention d'axes est écrite une fois dans le schéma.
+- Le module de simulation est un contrat typé : paramètres, observables, résultat et références de paramètres sont déclarés une fois par module, et la leçon est paramétrée par le module qu'elle utilise. Le registre est typé de façon distributive (`AnyLesson`), ce qui survit au second module.
+- La simulation confirme la bonne option d'une prédiction : chaque option déclare la valeur d'observable qu'elle affirme, et la validation au chargement exige qu'exactement une option corresponde. Les textes restent rédigés par l'auteur : la simulation vérifie la cohérence, elle ne remplace pas la rédaction.
+- Le pari de confiance appartient au moteur : le contenu fournit seulement de quoi remédier.
+- Le journal de séance est un type à part, typé par le module, qui fige ce qui a été mesuré.
 
 ### Types
 
 ```ts
 // src/schema/concepts.ts
-/** Concepts que la carte des résonances reliera (jalon 5). Ajouter un concept = une ligne ici. */
+/** Vocabulaire partagé des concepts (jalon 5 : la carte des résonances les relie). Un concept nouveau = une ligne ici. */
 export type ConceptId =
   | 'chute-libre'
   | 'deuxieme-loi-de-newton'
@@ -278,45 +321,71 @@ export type ConceptId =
 
 ```ts
 // src/schema/simulation.ts
+/** Convention d'axes, pour tous les modules : x vers la droite, y vers le haut, sol à y = 0. Unités SI. */
 export interface Vec2 { readonly x: number; readonly y: number }
 
-/** Un corps sphérique. L'identifiant est un slug de contenu, vérifié unique au chargement. */
+/** Un corps. L'identifiant est un slug de contenu, vérifié unique au chargement. */
 export interface Body {
   readonly id: string                    // ex. 'plomb'
   readonly label: string                 // ex. 'bille de plomb'
   readonly mass_kg: number
-  readonly radius_m: number
-  readonly dragCoefficient: number       // Cd sans dimension ; sphère lisse ≈ 0,47
-  readonly initialVelocity_m_s: Vec2     // (0, 0) pour un lâcher
+  readonly initialVelocity_m_s: Vec2     // (0, 0) pour un lâcher ; non nul pour un tir
+  readonly initialX_m?: number           // absent : le moteur répartit les corps sur la largeur
+  /** Traînée quadratique dans l'air. Absent : le corps n'est pas freiné (point matériel, particule). */
+  readonly drag?: { readonly radius_m: number; readonly coefficient?: number }  // coefficient : 0,47 par défaut (sphère)
+  /** Force constante propre au corps, en plus du poids (particule chargée : q·E). */
+  readonly constantForce_N?: Vec2
 }
 
 /** Mouvement sous force constante : chute libre, tir balistique, particule chargée dans un champ uniforme. */
 export interface ConstantForceMotionParams {
-  readonly gravity_m_s2: number          // signée ; négative dans le bac à sable si on veut
-  readonly releaseHeight_m: number
-  readonly tieTolerance_s: number        // écart d'atterrissage en dessous duquel c'est « en même temps »
+  readonly gravity_m_s2: number          // positive vers le bas ; négative : les corps montent
+  readonly releaseHeight_m: number       // hauteur du bas des corps au lâcher ; contact quand le bas touche y = 0
+  readonly tieTolerance_s: number        // résolution du chronomètre : deux atterrissages plus proches sont « en même temps »
   readonly bodies: ReadonlyArray<Body>
-  readonly airResistance: { readonly enabled: boolean; readonly airDensity_kg_m3: number }
+  readonly air: { readonly enabled: boolean; readonly density_kg_m3?: number }  // 1,2 par défaut
 }
+
+export type LandingOrder =
+  | { readonly kind: 'body'; readonly id: string }   // ce corps a touché le sol le premier
+  | { readonly kind: 'tie' }                          // égalité dans la tolérance
+  | { readonly kind: 'none' }                         // personne n'a atterri (gravité nulle ou négative)
 
 /** Ce que le module sait mesurer sur un résultat. Une prédiction porte sur l'une de ces grandeurs. */
 export interface ConstantForceMotionObservables {
-  readonly firstToLand: string | null    // id du corps arrivé premier ; null si égalité dans la tolérance
+  readonly firstToLand: LandingOrder
+  readonly landingTimes_s: ReadonlyArray<{ readonly bodyId: string; readonly t_s: number | null }>
 }
 
-/** Paramètres qu'un curseur peut piloter (numériques) et qu'un interrupteur peut piloter (booléens). */
+/** Piste échantillonnée d'un corps, à pas fixe ; lue par l'interface dans un worklet. */
+export interface BodyTrack {
+  readonly bodyId: string
+  readonly t_s: Float32Array
+  readonly x_m: Float32Array
+  readonly y_m: Float32Array
+  readonly landingTime_s: number | null   // interpolé au passage du sol
+}
+
+export interface ConstantForceMotionResult {
+  readonly tracks: ReadonlyArray<BodyTrack>
+  readonly duration_s: number
+  readonly bounds_m: { readonly min: Vec2; readonly max: Vec2 }   // étendue du mouvement, pour cadrer et choisir la grille
+}
+
+/** Paramètres qu'une réglette peut piloter (numériques) et qu'un interrupteur peut piloter (booléens). */
 export type ConstantForceMotionNumericRef =
   | { readonly param: 'gravity_m_s2' }
   | { readonly param: 'releaseHeight_m' }
   | { readonly param: 'mass_kg'; readonly bodyId: string }
 export type ConstantForceMotionBooleanRef =
-  | { readonly param: 'airResistance.enabled' }
+  | { readonly param: 'air.enabled' }
 
 /** Le contrat de chaque module. Ajouter un module = une entrée ici et un fichier dans physics/modules. */
 export interface ModuleContracts {
   readonly constantForceMotion: {
     readonly params: ConstantForceMotionParams
     readonly observables: ConstantForceMotionObservables
+    readonly result: ConstantForceMotionResult
     readonly numericRef: ConstantForceMotionNumericRef
     readonly booleanRef: ConstantForceMotionBooleanRef
   }
@@ -325,6 +394,7 @@ export interface ModuleContracts {
 export type SimulationModuleId = keyof ModuleContracts
 export type ParamsOf<M extends SimulationModuleId> = ModuleContracts[M]['params']
 export type ObservablesOf<M extends SimulationModuleId> = ModuleContracts[M]['observables']
+export type ResultOf<M extends SimulationModuleId> = ModuleContracts[M]['result']
 export type NumericRefOf<M extends SimulationModuleId> = ModuleContracts[M]['numericRef']
 export type BooleanRefOf<M extends SimulationModuleId> = ModuleContracts[M]['booleanRef']
 
@@ -355,29 +425,29 @@ export type PredictionChoice<M extends SimulationModuleId> = {
   }
 }[keyof ObservablesOf<M>]
 
-/** Réservé (jalon 2) : trajectoire tracée au doigt, comparée à la trajectoire simulée. */
-export interface PredictionTrace { readonly kind: 'trace'; readonly question: string }
-/** Réservé (jalon 2) : une valeur placée sur un curseur, comparée à un observable numérique. */
-export interface PredictionSlider { readonly kind: 'slider'; readonly question: string }
-
-export type Prediction<M extends SimulationModuleId> = PredictionChoice<M> | PredictionTrace | PredictionSlider
+/** Jalon 1 : un seul membre. Jalon 2 : trajectoire tracée au doigt, curseur de valeur. Élargir l'union ne casse rien. */
+export type Prediction<M extends SimulationModuleId> = PredictionChoice<M>
 ```
 
 ```ts
 // src/schema/explanation.ts
 export type EquationToken =
   | { readonly kind: 'symbol'; readonly text: string; readonly meaning: string }  // F, m, g, a : rendu en italique
-  | { readonly kind: 'operator'; readonly text: '=' | '·' | '/' | '+' | '−' }
+  | { readonly kind: 'operator'; readonly text: '=' | '·' | '+' | '−' }
   | { readonly kind: 'number'; readonly text: string; readonly unit?: string }
+  | { readonly kind: 'fraction'; readonly numerator: ReadonlyArray<EquationToken>; readonly denominator: ReadonlyArray<EquationToken> }
 
 export interface EquationLine { readonly tokens: ReadonlyArray<EquationToken> }
 
-/** L'équation se construit devant l'utilisateur, une étape par pression. */
+/**
+ * L'équation se construit devant l'utilisateur. `write` : une pression par jeton (les jetons d'une fraction comptent un par un).
+ * `substitute`, `cancel`, `result` : une pression chacun. Le `text` s'affiche à la fin de l'étape.
+ */
 export type EquationStep =
-  | { readonly kind: 'write'; readonly line: EquationLine; readonly text: string }        // écrit une ligne, terme par terme
-  | { readonly kind: 'substitute'; readonly symbol: string; readonly by: EquationLine; readonly text: string } // remplace un symbole de la dernière ligne
-  | { readonly kind: 'cancel'; readonly symbol: string; readonly text: string }            // barre un symbole présent des deux côtés d'une fraction
-  | { readonly kind: 'result'; readonly line: EquationLine; readonly text: string }       // ligne finale, reprise sur la page de carnet
+  | { readonly kind: 'write'; readonly line: EquationLine; readonly text: string }
+  | { readonly kind: 'substitute'; readonly symbol: string; readonly by: ReadonlyArray<EquationToken>; readonly text: string }
+  | { readonly kind: 'cancel'; readonly symbol: string; readonly text: string }   // barre un symbole présent au numérateur et au dénominateur
+  | { readonly kind: 'result'; readonly line: EquationLine; readonly text: string } // ligne finale, reprise sur la page de carnet
 
 export type ExplanationBlock =
   | { readonly kind: 'text'; readonly text: string }
@@ -389,7 +459,7 @@ export type ExplanationBlock =
 export interface ExerciseOption {
   readonly id: string
   readonly label: string
-  /** Pour une option fausse : pourquoi on la choisit et ce qui cloche. C'est la remédiation ciblée après « sûr et faux ». */
+  /** Pour une option fausse : pourquoi on la choisit et ce qui cloche. C'est la remédiation ciblée après « c'est sûr » et faux. */
   readonly misconception?: string
 }
 
@@ -407,24 +477,46 @@ export interface Exercise {
 // src/schema/sandbox.ts
 import type { BooleanRefOf, NumericRefOf, SimulationModuleId } from './simulation'
 
+export type SliderScale =
+  | { readonly kind: 'linear'; readonly step: number }
+  | { readonly kind: 'log'; readonly digits: number }   // valeur arrondie à `digits` chiffres significatifs
+
+/** L'unité n'est pas dans le contenu : le module la connaît (`unitOf(ref)`). La valeur de départ est celle de la leçon. */
 export type SandboxControl<M extends SimulationModuleId> =
-  | { readonly kind: 'slider'; readonly target: NumericRefOf<M>; readonly label: string
-      readonly min: number; readonly max: number; readonly step: number; readonly unit: string }
-  | { readonly kind: 'toggle'; readonly target: BooleanRefOf<M>; readonly label: string
+  | { readonly kind: 'slider'; readonly id: string; readonly target: NumericRefOf<M>; readonly label: string
+      readonly min: number; readonly max: number; readonly scale: SliderScale }
+  | { readonly kind: 'toggle'; readonly id: string; readonly target: BooleanRefOf<M>; readonly label: string
       readonly on: string; readonly off: string }
 
 export interface Sandbox<M extends SimulationModuleId> {
-  readonly controls: ReadonlyArray<SandboxControl<M>>   // la valeur de départ est celle des paramètres de la leçon
+  readonly controls: ReadonlyArray<SandboxControl<M>>
   readonly challenges: ReadonlyArray<{ readonly id: string; readonly text: string }>  // proposés, jamais imposés
 }
 ```
 
 ```ts
 // src/schema/notebook.ts
-/** Ce que la leçon apporte à sa page de carnet. Le reste (croquis, équation, prédiction, résultat, date) vient du moteur. */
+import type { EquationLine } from './explanation'
+import type { ParamsOf, ResultOf, SimulationModuleId } from './simulation'
+import type { Confidence } from './session'
+
+/** Ce que la leçon apporte à sa page de carnet. Le reste vient du moteur. */
 export interface NotebookSpec {
   readonly title: string
   readonly takeaway: string              // une phrase : ce qui a été compris, jamais une félicitation
+}
+
+/** La page composée par le moteur, dessinée par l'interface, accumulée au jalon 3. */
+export interface NotebookPage<M extends SimulationModuleId> {
+  readonly number: number
+  readonly date: string                  // ISO 8601, formatée par l'interface
+  readonly title: string
+  readonly sketch: { readonly module: M; readonly params: ParamsOf<M>; readonly result: ResultOf<M> }
+  readonly equation: EquationLine | null // la ligne de la dernière étape `result`
+  readonly prediction: { readonly label: string; readonly confidence: Confidence } | null
+  readonly observed: string              // phrase produite par le module : « en même temps, 0,64 s »
+  readonly toReview: ReadonlyArray<string>   // titres des exercices marqués à revoir
+  readonly takeaway: string
 }
 ```
 
@@ -439,62 +531,78 @@ import type { Sandbox } from './sandbox'
 import type { SimulationModuleId, SimulationSpec } from './simulation'
 
 export interface Observation {
-  readonly slowMotion: number            // facteur proposé par le bouton Ralenti ; 0,25 = quatre fois plus lent
-  readonly caption: string               // légende sous le cadre pendant la chute
+  readonly launchLabel: string           // le bouton qui lance : « Lâcher les billes » ; le ralenti est décidé par l'interface
 }
 
-export interface Lesson<M extends SimulationModuleId = SimulationModuleId> {
+export interface Lesson<M extends SimulationModuleId> {
   readonly id: string
   readonly title: string
   readonly level: 'college' | 'lycee' | 'universite'
-  readonly hook: string                  // 1. le fait, en quinze secondes ; jamais une définition
+  readonly hook: string                  // 1. un fait réel, contre-intuitif ; jamais une définition
   readonly prediction: Prediction<M>     // 2. obligatoire pour continuer
   readonly simulation: SimulationSpec<M> // 3. ce que le moteur simule
-  readonly observation: Observation      //    et comment on le regarde
-  readonly explanation: ReadonlyArray<ExplanationBlock>  // 4. court, l'équation construite ici, jamais avant
+  readonly observation: Observation      //    et comment on le lance
+  readonly explanation: ReadonlyArray<ExplanationBlock>  // 4. court ; l'équation construite ici, jamais avant
   readonly exercises: ReadonlyArray<Exercise>            // 5 et 6. deux à quatre, vérifié au chargement
   readonly sandbox: Sandbox<M>           // 7. tout est manipulable, jusqu'à l'absurde
   readonly notebook: NotebookSpec        // 8. la page se remplit toute seule
   readonly concepts: ReadonlyArray<ConceptId>
 }
+
+/** Union distributive : le registre accepte n'importe quel module sans perdre la corrélation module / paramètres / prédiction. */
+export type AnyLesson = { [M in SimulationModuleId]: Lesson<M> }[SimulationModuleId]
 ```
 
 ```ts
 // src/schema/session.ts — ce que le moteur enregistre, pas ce que l'auteur écrit
-export type Confidence = 'guess' | 'think' | 'sure'      // je devine / je pense / je suis sûr
+import type { ObservablesOf, SimulationModuleId } from './simulation'
+
+export type Confidence = 'guess' | 'think' | 'sure'      // au hasard / je pense / c'est sûr
 export type StepId = 'hook' | 'prediction' | 'observation' | 'explanation' | 'exercise' | 'correction' | 'sandbox' | 'notebook'
 
-export interface SessionJournal {
+/** Ce que le pari de confiance produit. Une seule table, dans engine/confidence.ts. */
+export interface ConfidenceOutcome {
+  readonly reward: 'strong' | 'normal' | 'weak' | 'none'
+  readonly followUp: 'none' | 'review' | 'remediate'    // à revoir (jalon 6 : révision espacée) ; remédiation immédiate
+}
+
+export interface SessionJournal<M extends SimulationModuleId> {
   readonly lessonId: string
   readonly startedAt: string                             // ISO 8601
   readonly step: StepId
-  readonly exerciseIndex: number                         // exercice en cours pour 'exercise' et 'correction'
-  readonly prediction: { readonly optionId: string; readonly confidence: Confidence } | null
-  readonly verdict: { readonly observedOptionId: string | null } | null   // option confirmée par la simulation ; null si aucune ne correspond
+  readonly currentExerciseId: string | null
+  readonly prediction: { readonly kind: 'choice'; readonly optionId: string; readonly confidence: Confidence } | null
+  /** Figé au moment de l'observation : l'option confirmée, ce qui a été mesuré, l'issue du pari. */
+  readonly verdict: { readonly observedOptionId: string; readonly observables: ObservablesOf<M>; readonly outcome: ConfidenceOutcome } | null
   readonly answers: ReadonlyArray<{
     readonly exerciseId: string
     readonly optionId: string
     readonly confidence: Confidence
     readonly correct: boolean
+    readonly outcome: ConfidenceOutcome
   }>
   readonly replays: number
-  readonly sandbox: { readonly opened: boolean; readonly airResistanceTried: boolean }
-}
-
-/** Ce que le pari de confiance produit. Une seule table, dans engine/confidence.ts. */
-export interface ConfidenceOutcome {
-  readonly reward: 'strong' | 'medium' | 'weak' | 'none'
-  readonly followUp: 'none' | 'review' | 'remediate'    // à revoir (jalon 6 : révision espacée) ; remédiation immédiate
+  readonly sandboxControlsTouched: ReadonlyArray<string>   // identifiants de contrôles, sans nommer de paramètre physique
 }
 ```
 
 ### Décisions
 
-- **Qui détient la bonne réponse d'une prédiction.** La simulation. Chaque option déclare la valeur d'observable qu'elle affirme (`expected`) ; après la chute, le moteur calcule l'observable et retient l'option qui correspond. La leçon ne contient donc jamais « la bonne réponse est en même temps ». Si le contenu et la physique se contredisent, `validateLesson` le détecte : il simule la leçon avec ses paramètres par défaut et exige qu'exactement une option corresponde.
-- **Les exercices portent leur réponse.** Ce sont des questions rédigées, pas des expériences ; `answerId` est vérifié au chargement (existe, et chaque option fausse a une `misconception`).
-- **Validation au chargement.** `validateLesson(lesson)` renvoie une liste d'erreurs lisibles (chemin du champ, problème) : identifiants uniques, deux à quatre exercices, `slowMotion` dans ]0, 1], curseurs avec `min < max` et `step > 0`, références de corps existantes, prédiction cohérente avec la simulation, au moins un concept. Exécuté en développement au démarrage et dans un test qui couvre tout le registre.
-- **Référencement des curseurs.** Par une union discriminée déclarée dans le contrat du module (`NumericRefOf<M>`, `BooleanRefOf<M>`) : un curseur ne peut viser qu'un paramètre numérique existant, un interrupteur qu'un booléen, et une faute de frappe est une erreur de compilation. Seul `bodyId` reste un slug, vérifié au chargement.
-- **Ce que fournit le contenu pour le pari de confiance.** Rien d'autre que `misconception` sur les options fausses et `reveal` sur les options de prédiction. Le barème est dans `engine/confidence.ts` : sûr et juste → récompense forte ; sûr et faux → aucune sanction, remédiation immédiate par la `misconception` de l'option choisie ; je devine et juste → récompense faible, suite « à revoir ».
+- **Qui confirme la bonne option d'une prédiction.** La simulation. Chaque option déclare la valeur d'observable qu'elle affirme (`expected`, comparée par égalité structurelle) ; après la chute, `verdict.ts` retient l'option qui correspond aux observables figées dans le journal. `validateLesson` simule la leçon avec ses paramètres et exige qu'exactement une option corresponde, que les `expected` soient deux à deux distincts et que tout `id` de corps référencé existe. Les textes de révélation, eux, sont rédigés par l'auteur et disent forcément quelque chose du résultat : la simulation vérifie que la structure est cohérente, elle ne relit pas la prose. C'est la première critique écartée : typer `reveal` par issue (confirmée / démentie) doublerait chaque texte pour un cas, une leçon dont les paramètres changent sans relecture, qui est de toute façon une erreur d'auteur.
+- **La tolérance d'égalité reste dans les paramètres du module.** Seconde critique écartée : elle est bien un réglage de l'instrument (la résolution du chronomètre, 20 ms), pas un réglage physique ; elle n'est pas dans `NumericRefOf`, donc pas manipulable dans le bac à sable ; à ralenti ×4, 20 ms font 80 ms à l'écran, et deux temps affichés au centième peuvent différer d'une unité sous un verdict « en même temps », ce qu'on assume : c'est « presque en même temps », et c'est instructif.
+- **Les exercices portent leur réponse.** Ce sont des questions rédigées, pas des expériences ; `answerId` est vérifié au chargement, et chaque option fausse doit avoir une `misconception`.
+- **Validation au chargement.** `validateLesson(lesson)` renvoie une liste d'erreurs lisibles (chemin du champ, problème) : unicité des identifiants par liste (options d'une même question, corps, exercices, contrôles, défis), deux à quatre exercices, réglettes avec `min < max`, valeur de départ dans `[min, max]` et multiple du pas en linéaire, `min > 0` en logarithmique, références de corps existantes, symboles de `substitute` et `cancel` présents dans la dernière ligne (pour `cancel`, au numérateur et au dénominateur), prédiction cohérente avec la simulation, au moins un concept.
+- **Référencement des paramètres.** Par une union discriminée déclarée dans le contrat du module (`NumericRefOf<M>`, `BooleanRefOf<M>`) : une réglette ne peut viser qu'un paramètre numérique existant, un interrupteur qu'un booléen, et une faute de frappe est une erreur de compilation. L'unité vient du module (`unitOf(ref)`), jamais du contenu. Seul `bodyId` reste un slug, vérifié au chargement.
+- **La table du pari de confiance**, appliquée à la prédiction comme aux exercices :
+
+  | Pari | Juste | Faux |
+  |---|---|---|
+  | c'est sûr | récompense forte, rien à suivre | aucune sanction, remédiation immédiate par la `misconception` de l'option choisie (ou le `reveal` pour la prédiction) |
+  | je pense | récompense normale, rien à suivre | rien, correction, marqué à revoir |
+  | au hasard | récompense faible, marqué à revoir | rien, correction, marqué à revoir |
+
+- **Retour arrière.** `back` est toujours permis et ne perd rien, mais `predict` est refusé dès que `journal.verdict` existe : on ne re-prédit pas après avoir vu. L'étape de prédiction devient lecture seule.
+- **Le ralenti n'est pas dans le contenu.** L'interface choisit la vitesse de lecture pour que le mouvement dure environ 2,5 s à l'écran ; une leçon ne décide ni durée ni facteur.
 
 ### La leçon des billes dans ce schéma
 
@@ -507,7 +615,7 @@ export const freeFallTwoBalls = {
   title: 'Quelle bille touche le sol en premier ?',
   level: 'college',
 
-  hook: 'Une bille de plomb et une bille de plastique creuse, même taille. La première pèse trente fois plus. On les lâche ensemble, de la même hauteur, à deux mètres du sol.',
+  hook: 'Aristote a écrit qu’une pierre dix fois plus lourde tombe dix fois plus vite. On l’a cru pendant deux mille ans. Devant toi : deux billes de même taille, l’une trente fois plus lourde que l’autre, à deux mètres du sol.',
 
   prediction: {
     kind: 'choice',
@@ -515,15 +623,15 @@ export const freeFallTwoBalls = {
     observable: 'firstToLand',
     options: [
       {
-        id: 'lourde', label: 'La lourde', expected: 'plomb',
-        reveal: 'Presque tout le monde répond ça. Aristote aussi, pendant deux mille ans. Regarde la chute au ralenti : elles restent côte à côte jusqu’au sol.',
+        id: 'lourde', label: 'La lourde', expected: { kind: 'body', id: 'plomb' },
+        reveal: 'Presque tout le monde répond ça. Aristote aussi. Regarde la chute au ralenti : elles restent côte à côte jusqu’au sol.',
       },
       {
-        id: 'legere', label: 'La légère', expected: 'plastique',
+        id: 'legere', label: 'La légère', expected: { kind: 'body', id: 'plastique' },
         reveal: 'Réponse rare. Tu as peut-être pensé que le poids freine la lourde. Regarde : elles restent côte à côte jusqu’au sol.',
       },
       {
-        id: 'ensemble', label: 'En même temps', expected: null,
+        id: 'ensemble', label: 'En même temps', expected: { kind: 'tie' },
         reveal: 'C’est ce qui se passe. Mais est-ce que tu sais pourquoi ? La suite le montre, terme par terme.',
       },
     ],
@@ -536,17 +644,14 @@ export const freeFallTwoBalls = {
       releaseHeight_m: 2,
       tieTolerance_s: 0.02,
       bodies: [
-        { id: 'plomb', label: 'bille de plomb', mass_kg: 0.117, radius_m: 0.0135, dragCoefficient: 0.47, initialVelocity_m_s: { x: 0, y: 0 } },
-        { id: 'plastique', label: 'bille de plastique', mass_kg: 0.004, radius_m: 0.0135, dragCoefficient: 0.47, initialVelocity_m_s: { x: 0, y: 0 } },
+        { id: 'plomb', label: 'bille de plomb', mass_kg: 0.117, initialVelocity_m_s: { x: 0, y: 0 }, drag: { radius_m: 0.0135 } },
+        { id: 'plastique', label: 'bille de plastique', mass_kg: 0.004, initialVelocity_m_s: { x: 0, y: 0 }, drag: { radius_m: 0.0135 } },
       ],
-      airResistance: { enabled: false, airDensity_kg_m3: 1.2 },
+      air: { enabled: false },
     },
   },
 
-  observation: {
-    slowMotion: 0.25,
-    caption: 'Deux mètres de chute. Regarde la hauteur des deux billes à chaque instant.',
-  },
+  observation: { launchLabel: 'Lâcher les billes' },
 
   explanation: [
     { kind: 'text', text: 'Elles arrivent ensemble. Pourtant la lourde est tirée vers le bas trente fois plus fort. Où passe cette force ?' },
@@ -569,20 +674,20 @@ export const freeFallTwoBalls = {
           line: { tokens: [
             { kind: 'symbol', text: 'a', meaning: 'l’accélération : à quel rythme la vitesse augmente' },
             { kind: 'operator', text: '=' },
-            { kind: 'symbol', text: 'F', meaning: 'la force qu’on lui applique' },
-            { kind: 'operator', text: '/' },
-            { kind: 'symbol', text: 'm', meaning: 'la masse, qui résiste' },
+            { kind: 'fraction',
+              numerator: [{ kind: 'symbol', text: 'F', meaning: 'la force qu’on lui applique' }],
+              denominator: [{ kind: 'symbol', text: 'm', meaning: 'la masse, qui résiste' }] },
           ] },
           text: 'Mais une force ne donne pas une vitesse. Elle donne une accélération. Et pour une même force, une grosse masse accélère moins : elle résiste. C’est la deuxième loi de Newton.',
         },
         {
           kind: 'substitute',
           symbol: 'F',
-          by: { tokens: [
+          by: [
             { kind: 'symbol', text: 'm', meaning: 'la masse' },
             { kind: 'operator', text: '·' },
             { kind: 'symbol', text: 'g', meaning: 'la gravité' },
-          ] },
+          ],
           text: 'Remplace la force par le poids.',
         },
         {
@@ -608,7 +713,7 @@ export const freeFallTwoBalls = {
       id: 'deux-hauteurs',
       question: 'Deux billes identiques. Tu lâches la première de 2 m et la seconde de 1 m. Laquelle a la plus grande accélération ?',
       options: [
-        { id: 'haute', label: 'Celle lâchée de 2 m', misconception: 'Elle arrive plus vite au sol, c’est vrai : elle a eu plus de temps pour prendre de la vitesse. Mais l’accélération, c’est le rythme auquel la vitesse augmente, et ce rythme est le même pour les deux.' },
+        { id: 'haute', label: 'Celle lâchée de 2 m', misconception: 'Elle touche le sol à plus grande vitesse, c’est vrai : elle a eu plus de temps pour en prendre. Mais l’accélération, c’est le rythme auquel la vitesse augmente, et ce rythme est le même pour les deux.' },
         { id: 'basse', label: 'Celle lâchée de 1 m', misconception: 'Elle touche le sol plus tôt, mais pas parce qu’elle accélère plus : elle a simplement moins de chemin à faire.' },
         { id: 'meme', label: 'La même' },
       ],
@@ -632,23 +737,23 @@ export const freeFallTwoBalls = {
         'Même masse, même poids, donc même accélération au départ : g.',
         'Mais l’air pousse contre tout ce qui avance dans lui. Cette force dépend de la forme et de la surface, pas de la masse.',
         'La feuille à plat offre une grande surface : l’air la freine fort. La boule, une petite : elle tombe presque comme dans le vide.',
-        'C’est là que a = g cesse d’être toute l’histoire. Dans le bac à sable, active la résistance de l’air et joue avec les masses : la réponse de la leçon change.',
+        'C’est là que a = g cesse d’être toute l’histoire. Dans le bac à sable, active la résistance de l’air et baisse la masse d’une bille : l’air la freine bien plus qu’une lourde.',
       ],
     },
   ],
 
   sandbox: {
     controls: [
-      { kind: 'slider', target: { param: 'gravity_m_s2' }, label: 'Gravité', min: -20, max: 50, step: 0.1, unit: 'm/s²' },
-      { kind: 'slider', target: { param: 'releaseHeight_m' }, label: 'Hauteur', min: 0.5, max: 100, step: 0.5, unit: 'm' },
-      { kind: 'slider', target: { param: 'mass_kg', bodyId: 'plomb' }, label: 'Masse du plomb', min: 0, max: 2, step: 0.001, unit: 'kg' },
-      { kind: 'slider', target: { param: 'mass_kg', bodyId: 'plastique' }, label: 'Masse du plastique', min: 0, max: 2, step: 0.001, unit: 'kg' },
-      { kind: 'toggle', target: { param: 'airResistance.enabled' }, label: 'Résistance de l’air', on: 'avec', off: 'sans' },
+      { kind: 'slider', id: 'gravite', target: { param: 'gravity_m_s2' }, label: 'Gravité', min: -20, max: 50, scale: { kind: 'linear', step: 0.01 } },
+      { kind: 'slider', id: 'hauteur', target: { param: 'releaseHeight_m' }, label: 'Hauteur', min: 0.5, max: 100, scale: { kind: 'linear', step: 0.5 } },
+      { kind: 'slider', id: 'masse-plomb', target: { param: 'mass_kg', bodyId: 'plomb' }, label: 'Masse du plomb', min: 0.001, max: 0.5, scale: { kind: 'log', digits: 3 } },
+      { kind: 'slider', id: 'masse-plastique', target: { param: 'mass_kg', bodyId: 'plastique' }, label: 'Masse du plastique', min: 0.001, max: 0.5, scale: { kind: 'log', digits: 3 } },
+      { kind: 'toggle', id: 'air', target: { param: 'air.enabled' }, label: 'Résistance de l’air', on: 'avec', off: 'sans' },
     ],
     challenges: [
       { id: 'inverser', text: 'Trouve un réglage où la bille de plastique arrive nettement après l’autre. Puis un autre où elle arrive avant.' },
       { id: 'lune', text: 'Règle la gravité de la Lune, 1,62 m/s². Combien de temps dure la chute ?' },
-      { id: 'poussiere', text: 'Avec la résistance de l’air, descends une masse vers zéro. Que fait la bille ? Que dit a = F / m quand m devient minuscule ?' },
+      { id: 'cent-metres', text: 'Monte à 100 m avec la résistance de l’air. Lis les deux temps. Que dirait Aristote ?' },
     ],
   },
 
@@ -661,30 +766,31 @@ export const freeFallTwoBalls = {
 } satisfies Lesson<'constantForceMotion'>
 ```
 
-Note sur les valeurs : une bille de plomb de 27 mm de diamètre pèse environ 117 g ; une bille de plastique creuse de même diamètre, environ 4 g. Sans air, les deux touchent le sol à 0,64 s. Avec l'air, de 2 m, l'écart reste inférieur à 3 centièmes de seconde : c'est en montant la hauteur ou en baissant la masse du plastique que le bac à sable rend l'écart visible, ce qui est exactement le jeu proposé.
+Note sur les valeurs, vérifiées par intégration numérique : une bille de plomb de 27 mm de diamètre pèse environ 117 g, une bille de plastique creuse de même diamètre environ 4 g. Sans air, les deux touchent le sol à 0,64 s. Avec l'air, de 2 m, l'écart est d'environ 8 ms, sous la tolérance : basculer l'interrupteur seul ne change pas le verdict, et c'est la hauteur ou la masse qui rendent l'écart visible. À 100 m avec l'air : 4,6 s pour le plomb, 7,5 s pour le plastique. Sur la Lune, de 2 m : 1,57 s. Les réglettes de masse sont logarithmiques : en linéaire de 0 à 2 kg, la valeur de départ du plastique tiendrait dans le premier pixel.
 
 ### Comment le moteur consomme le schéma
 
-- **Registre des modules.** `physics/modules/index.ts` expose, pour chaque `SimulationModuleId`, un objet `SimulationModule<M>` : `simulate(params) → SimulationResult`, `observe(result) → ObservablesOf<M>`, `applyParamRef(params, ref, value) → params`, `gridStep_m(params) → number`. Le module de mouvement sous force constante intègre chaque corps par Euler semi-implicite à pas fixe de 1/240 s : `v ← v + a·dt`, `y ← y + v·dt`, avec `a = g − (½ ρ Cd A v |v|) / m` quand l'air est activé, et `a = g` sinon. Le temps d'atterrissage est interpolé linéairement au passage du sol, ce qui donne des temps exacts et non arrondis au pas. Une masse nulle avec l'air activé donne une vitesse limite nulle : le corps reste suspendu, comme une poussière, et le code le dit en commentaire. Une gravité négative fait monter les corps ; la simulation s'arrête à 30 s ou quand tout est sorti du cadre. Rien n'est bridé.
+- **Registre des modules.** `physics/modules/index.ts` expose `moduleFor(simulation)`, qui rétrécit sur le discriminant `module` et renvoie un `SimulationModule<M>` : `simulate(params) → ResultOf<M>`, `observe(result, params) → ObservablesOf<M>`, `applyParamRef(params, ref, value) → params`, `unitOf(ref) → string`, `describe(observables) → string` (la phrase « en même temps, 0,64 s » de la page de carnet).
+- **Le module de mouvement sous force constante.** Pour chaque corps : `a = g_vec + F/m − (½ ρ Cd A |v| / m) · v`, avec `g_vec = (0, −gravity_m_s2)`, `F` la force propre éventuelle, `A = π r²` la section transversale, la traînée absente si le corps n'a pas de `drag`. Intégration par Euler semi-implicite à pas fixe (`v ← v + a·dt`, `p ← p + v·dt`), `dt = 1/240 s` ramené à un pas plus fin si la durée caractéristique `√(2h/|g|)` est courte, pour garder au moins deux mille pas. Le temps d'atterrissage est interpolé linéairement au passage du sol (bas du corps à y = 0). La simulation s'arrête quand tous les corps ont atterri ou à 30 s. Cas limites écrits et commentés : masse nulle avec traînée → vitesse limite nulle, le corps reste où il est (pas de division par zéro) ; gravité nulle ou négative → `firstToLand` vaut `{ kind: 'none' }`.
 - **Résolution des paramètres.** Un `NumericRefOf<M>` est appliqué par le module lui-même, qui seul sait où vit `mass_kg` d'un corps donné. Le bac à sable ne manipule jamais la structure des paramètres.
-- **Machine à états.** `engine/lesson-machine.ts` est un réducteur `(journal, event) → journal` dont l'état est `SessionJournal`. Ordre : `hook → prediction → observation → explanation → (exercise → correction) × n → sandbox → notebook`. `predict` est refusé tant que confiance et option manquent ; `next` depuis `prediction` est refusé sans prédiction ; `back` est toujours permis et ne perd rien. Le journal étant la seule vérité, quitter et revenir à n'importe quelle étape est trivial.
-- **Verdict.** `engine/verdict.ts` calcule `observe(result)[prediction.observable]` et cherche l'option dont `expected` est égal : c'est `observedOptionId`. Comparé à `prediction.optionId`, il donne juste ou faux ; `reveal` de l'option choisie est affiché.
-- **Page de carnet.** `engine/notebook-page.ts` prend la leçon, le journal et le résultat de simulation, et produit `NotebookPage` : titre et phrase à retenir (leçon), croquis (module, paramètres, résultat, prédiction : l'interface le redessine avec `SimulationCanvas` en vignette), équation (la ligne de la dernière étape `result`), prédiction et confiance (journal), observé (étiquette de l'option confirmée et temps mesurés), date, numéro de page (1 au jalon 1 ; jalon 3 : compte des pages).
+- **Machine à états.** `reduce(lesson, journal, event)`, état `SessionJournal<M>`. Ordre : `hook → prediction → observation → explanation → (exercise → correction) par exercice → sandbox → notebook`. `predict` est refusé sans confiance ou sans option, et refusé dès qu'un verdict existe ; `next` depuis `prediction` est refusé sans prédiction ; `back` est toujours permis. Le journal étant la seule vérité, quitter et revenir à n'importe quelle étape est trivial.
+- **Verdict.** Sur `observed`, le réducteur fige `observables = module.observe(result, params)`, cherche l'option dont `expected` est structurellement égal à `observables[prediction.observable]`, et applique la table de confiance. Le `reveal` de l'option choisie est affiché par l'interface.
+- **Page de carnet.** `notebook-page.ts` prend la leçon, le journal, le résultat, la date et le numéro, et produit `NotebookPage<M>` : titre et phrase à retenir (leçon), croquis (module, paramètres, résultat), équation (dernière étape `result`), prédiction et confiance (journal), observé (`module.describe`), exercices à revoir (issues `review`).
 
 ### Limites connues
 
-- `bodyId` dans les références de curseurs est une chaîne vérifiée au chargement, pas à la compilation : rendre les identifiants de corps littéraux demanderait un générique de plus sur `Lesson`, ce que le jalon 1 ne justifie pas.
-- `PredictionTrace` et `PredictionSlider` sont déclarés sans champs : ils fixent la forme de l'union, et leurs champs arriveront avec la première leçon qui les utilise (jalon 2).
-- `EquationToken` ne compose que des lignes plates avec une barre de fraction simple ; les fractions empilées ou les indices viendront avec le premier besoin.
-- `SessionJournal` n'est pas persisté au jalon 1 (voir question ouverte 1) ; sa forme est déjà celle qui sera écrite en SQLite au jalon 6.
+- `bodyId` dans les références et les observables est une chaîne vérifiée au chargement, pas à la compilation : rendre les identifiants de corps littéraux demanderait un générique de plus sur `Lesson`, ce que le jalon 1 ne justifie pas.
+- `Prediction<M>` n'a qu'un membre ; la trajectoire tracée et le curseur arriveront avec la première leçon qui les utilise, et le journal s'élargira avec eux.
+- `EquationToken` compose des lignes plates et des fractions simples ; indices et exposants viendront avec le premier besoin.
+- `SessionJournal` n'est pas persisté au jalon 1 (voir question ouverte 1) ; au jalon 6 il faudra lui ajouter une version de leçon pour relire une page dont la leçon a changé.
 - Les observables d'un module sont fixés par le module : une leçon ne peut pas inventer une grandeur à mesurer, ce qui est voulu.
 
 ---
 
 ## 4. Questions ouvertes
 
-1. **Le carnet du jalon 1 est-il persisté ?** La persistance est prévue au jalon 6, mais « interruptible sans perte » suppose de survivre à une fermeture de l'app. Recommandation : au jalon 1, la page de carnet est générée et affichée, le journal vit en mémoire dans zustand ; on installe expo-sqlite au jalon 6 avec le journal déjà dans sa forme finale.
-2. **Langue des identifiants.** Recommandation : code en anglais, contenu, commentaires et identifiants de contenu (slugs) en français, avec le glossaire fixé en section 2.
+1. **Le carnet du jalon 1 est-il persisté ?** La persistance est prévue au jalon 6, mais « interruptible sans perte » suppose de survivre à une fermeture de l'app. Recommandation : au jalon 1, la page est générée et affichée, le journal vit en mémoire dans zustand ; expo-sqlite arrive au jalon 6 avec le journal déjà dans sa forme finale, plus une version de leçon.
+2. **Langue des identifiants.** Recommandation : code en anglais, contenu, commentaires, textes d'interface et identifiants de contenu en français, avec le glossaire fixé en section 2.
 3. **Thème sombre.** Recommandation : aucun au jalon 1 ; la direction « Crayon et encre » est une feuille de papier claire. Un thème « ardoise » pourrait suivre si les retours le demandent.
-4. **Rendu des équations.** Recommandation : composition maison dans `EquationLine` avec STIX Two Text (symboles) et une barre de fraction dessinée, plutôt qu'une WebView avec KaTeX ou MathJax, lourde, hors ligne compliquée et incapable d'animer terme par terme.
-5. **Version de TypeScript.** TypeScript 7 (compilateur natif) est disponible sur npm, mais l'outillage Expo, jest-expo et Babel ne l'ont pas encore tous adopté. Recommandation : rester sur TypeScript 5.9 au jalon 1 et passer à 7 quand `expo` le déclarera compatible.
+4. **Rendu des équations.** Recommandation : composition maison dans `EquationLine` avec STIX Two Text et une fraction dessinée, plutôt qu'une WebView avec KaTeX ou MathJax, lourde, hors ligne compliquée et incapable d'animer terme par terme.
+5. **Version de TypeScript.** Le gabarit Expo 57 livre TypeScript 6.0 ; TypeScript 7 (compilateur natif) est disponible mais pas encore adopté par tout l'outillage Expo et jest. Recommandation : rester sur la 6.0 livrée par le gabarit, passer à la 7 quand `expo` la déclarera compatible.
