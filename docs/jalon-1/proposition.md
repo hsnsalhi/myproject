@@ -294,6 +294,20 @@ Versions figées par le SDK 57 d'Expo (`bundledNativeModules.json` d'`expo@57.0.
 - Le texte Skia dépend d'un fichier `.ttf` chargé à part des polices de l'interface : deux chemins de chargement pour la même police, à garder alignés.
 - STIX Two Text ne couvre pas la composition mathématique complète ; `EquationLine` compose à la main les lignes plates et une fraction simple, ce qui suffit pour la mécanique classique.
 
+### Construction et distribution
+
+Validé. Un seul code TypeScript pour iOS et Android, aucun dossier natif dans le dépôt : les projets natifs sont régénérés à chaque construction depuis `app.json` et les plugins de configuration (génération native continue d'Expo). Rien à déployer côté serveur.
+
+| Phase | Outil | Ce qu'on obtient |
+|---|---|---|
+| Jalon 1, sur appareil | Expo Go 57 sur un Android bas de gamme et un iPhone | La leçon complète sans compilation native : Expo Go embarque Skia, Reanimated et Gesture Handler. C'est là qu'on mesure les 60 fps. |
+| Dès qu'il faut une app installable | EAS Build (construction dans le nuage) avec `expo-dev-client` | Un « development build » rechargeable à chaud qui remplace Expo Go, puis les binaires `.aab` Android et `.ipa` iOS, sans Mac ni Android Studio en local. |
+| Testeurs | Lien d'installation interne EAS (Android), TestFlight via EAS Submit (iOS) | Puis piste de test interne du Play Console et App Store. Comptes requis : Apple Developer (99 $ par an), Google Play (25 $ une fois). |
+| Mises à jour sans les stores | EAS Update, à partir du jalon 2 | Le JavaScript et les leçons (qui sont des données) arrivent sans nouvelle version des stores. L'app reste entièrement fonctionnelle hors ligne ; la mise à jour ne se télécharge que si le réseau est là. |
+| Intégration continue | Rien au jalon 1 ; plus tard une action GitHub | jest sur `physics/` et `engine/`, puis une construction EAS sur `master`. |
+
+Fichiers ajoutés à la première construction EAS : `eas.json` avec trois profils (`development` avec dev-client, `preview` en distribution interne, `production`), et la dépendance `expo-dev-client`. La version d'exécution d'EAS Update suit la politique `appVersion` de `app.json`.
+
 ---
 
 ## 3. Schéma de données d'une leçon
