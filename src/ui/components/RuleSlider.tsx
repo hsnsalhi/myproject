@@ -3,6 +3,7 @@ import { StyleSheet, Text, TextInput, View, type TextInputProps } from 'react-na
 import { Gesture, GestureDetector } from 'react-native-gesture-handler'
 import Animated, { useAnimatedProps, useAnimatedStyle, useSharedValue } from 'react-native-reanimated'
 import { scheduleOnRN } from 'react-native-worklets'
+import { trimZeros } from '@/physics/format'
 import { colors } from '@/ui/theme/colors'
 import { spacing, stroke, touch } from '@/ui/theme/spacing'
 import { type } from '@/ui/theme/typography'
@@ -139,8 +140,8 @@ export function RuleSlider({ label, unit, min, max, value, scale, format, onChan
         </View>
       </GestureDetector>
       <View style={styles.ends}>
-        <Text style={type.monoTiny}>{format(min)}</Text>
-        <Text style={type.monoTiny}>{format(max)}</Text>
+        <Text style={type.monoTiny}>{trimZeros(format(min))}</Text>
+        <Text style={type.monoTiny}>{trimZeros(format(max))}</Text>
       </View>
     </View>
   )

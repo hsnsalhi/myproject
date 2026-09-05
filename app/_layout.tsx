@@ -5,6 +5,7 @@ import { useEffect } from 'react'
 import { GestureHandlerRootView } from 'react-native-gesture-handler'
 import { lessons } from '@/content'
 import { validateAll } from '@/engine/validate-lesson'
+import { useSkiaReady } from '@/ui/skia-web'
 import { colors } from '@/ui/theme/colors'
 import { useAppFonts } from '@/ui/theme/use-app-fonts'
 
@@ -19,12 +20,14 @@ if (__DEV__) {
 export default function RootLayout() {
   // Si une police échoue (connexion instable sous Expo Go), on lance quand même : les styles retombent sur la police système.
   const fontsReady = useAppFonts()
+  const skiaReady = useSkiaReady()
+  const ready = fontsReady && skiaReady
 
   useEffect(() => {
-    if (fontsReady) void SplashScreen.hideAsync()
-  }, [fontsReady])
+    if (ready) void SplashScreen.hideAsync()
+  }, [ready])
 
-  if (!fontsReady) return null
+  if (!ready) return null
 
   return (
     <GestureHandlerRootView style={{ flex: 1, backgroundColor: colors.papier }}>

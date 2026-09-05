@@ -20,3 +20,9 @@ export function useCanvasFonts(): CanvasFonts {
   const readout = useFont(monoMedium, 15)
   return { small, readout }
 }
+
+/** Largeur d'un texte, par la somme des avances de glyphes : implémenté partout, y compris sur le web où measureText ne l'est pas. */
+export function textWidth(font: SkFont, text: string): number {
+  const ids = font.getGlyphIDs(text)
+  return font.getGlyphWidths(ids).reduce((sum, width) => sum + width, 0)
+}

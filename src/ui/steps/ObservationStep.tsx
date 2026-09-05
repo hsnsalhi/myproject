@@ -29,7 +29,9 @@ export function ObservationStep<M extends SimulationModuleId>({ lesson, journal,
     const measured: unknown = journal.verdict.observables[lesson.prediction.observable]
     return ranksFor(measured, bodyIds)
   }, [journal.verdict, lesson.prediction.observable, bodyIds])
-  const factor = slowMotionFactor(result.duration_s)
+  // Le ralenti se règle sur le mouvement lui-même, pas sur le temps de repos qui suit le dernier atterrissage.
+  const motionDuration = result.tracks.reduce((max, track) => Math.max(max, track.landingTime_s ?? 0), 0) || result.duration_s
+  const factor = slowMotionFactor(motionDuration)
   const [slow, setSlow] = useState(false)
   const [launched, setLaunched] = useState(journal.verdict !== null)
 

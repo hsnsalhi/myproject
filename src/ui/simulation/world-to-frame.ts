@@ -16,11 +16,13 @@ export interface FrameTransform {
   readonly layoutX: ReadonlyArray<number> | null
 }
 
-const PAD_TOP_PX = 24
+/** Place pour la légende (deux lignes) et le chronomètre au-dessus du mouvement. */
+const PAD_TOP_PX = 52
 const PAD_BOTTOM_PX = 40
 const PAD_SIDE_PX = 32
 const GRID_STEPS_M = [0.01, 0.1, 1, 10, 100, 1000]
-const MAX_GRID_LINES = 40
+/** Au-delà, la grille devient un aplat et coûte pour rien ; en deçà, on garde le carreau le plus fin possible. */
+const MAX_GRID_LINES = 64
 
 export function buildTransform(bounds: { readonly min: Vec2; readonly max: Vec2 }, tracks: ReadonlyArray<BodyTrack>, width: number, height: number): FrameTransform {
   const worldTop = Math.max(bounds.max.y * 1.08, 0.3)

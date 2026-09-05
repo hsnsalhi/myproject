@@ -20,7 +20,7 @@ import type { BodyTrack, Vec2 } from '@/schema/simulation'
 import { colors } from '@/ui/theme/colors'
 import { radius, stroke } from '@/ui/theme/spacing'
 import type { Rank } from './marks'
-import { useCanvasFonts } from './use-canvas-font'
+import { textWidth, useCanvasFonts } from './use-canvas-font'
 import { buildTransform, toPxX, toPxY, type FrameTransform } from './world-to-frame'
 
 export interface CanvasBody {
@@ -76,19 +76,11 @@ export function SimulationCanvas({ height: outerHeight, tracks, bodies, bounds, 
                 <PredictionMark x={x} transform={transform} rank={predicted?.[i] ?? null} font={fonts.small} />
                 <StrikeMark x={x} transform={transform} predicted={predicted?.[i] ?? null} observed={observed?.[i] ?? null} track={track} t={t} speed={speed} />
                 <LandingMark x={x} side={x < width / 2 ? 'left' : 'right'} transform={transform} track={track} t={t} speed={speed} font={fonts.small} />
-                {body && fonts.small && (
-                  <Text
-                    x={x - fonts.small.measureText(body.label).width / 2}
-                    y={toPxY(transform, track.y_m[0] ?? 0) - BALL_RADIUS_PX - 8}
-                    text={body.label}
-                    font={fonts.small}
-                    color={colors.graphite}
-                  />
-                )}
                 <BodyDot track={track} index={i} transform={transform} t={t} filled={body?.filled ?? true} />
               </Group>
             )
           })}
+          <Legend bodies={bodies} font={fonts.small} />
           {showClock && <Clock t={t} transform={transform} font={fonts.readout} />}
         </Canvas>
       )}
@@ -121,21 +113,46 @@ function makeGridPicture(transform: FrameTransform) {
   })
 }
 
+/** La légende, en haut à gauche : un disque plein ou creux par corps, et son nom. */
+function Legend({ bodies, font }: { readonly bodies: ReadonlyArray<CanvasBody>; readonly font: SkFont | null }) {
+  if (!font) return null
+  return (
+    <Group>
+      {bodies.map((body, i) => {
+        const cy = 16 + i * 18
+        return (
+          <Group key={body.id}>
+            {body.filled ? (
+              <Circle cx={14} cy={cy} r={5} color={colors.encre} />
+            ) : (
+              <Circle cx={14} cy={cy} r={5} color={colors.encre} style="stroke" strokeWidth={stroke.medium} />
+            )}
+            <Text x={26} y={cy + 4.5} text={body.label} font={font} color={colors.graphite} />
+          </Group>
+        )
+      })}
+    </Group>
+  )
+}
+
 function ScaleLabels({ transform, font }: { readonly transform: FrameTransform; readonly font: SkFont | null }) {
   if (!font) return null
+  // Étiquettes sur les lignes renforcées si au moins une tient dans le cadre, sinon sur les lignes fines ; six au plus.
   const major = transform.gridStep_m * 10
+  const labelStep = toPxY(transform, major) >= 12 ? major : transform.gridStep_m
   const labels: { readonly y: number; readonly text: string }[] = []
   for (let k = 0; ; k++) {
-    const y = toPxY(transform, k * major)
+    const y = toPxY(transform, k * labelStep)
     if (y < 12) break
-    labels.push({ y, text: formatMeters(k * major) })
-    if (labels.length > 12) break
+    labels.push({ y, text: formatMeters(k * labelStep) })
+    if (labels.length > 60) break
   }
-  const shown = labels.length > 6 ? labels.filter((_, i) => i === 0 || i === labels.length - 1) : labels
+  const every = Math.ceil(labels.length / 6)
+  const shown = labels.filter((_, i) => i % every === 0)
   return (
     <Group>
       {shown.map((label) => (
-        <Text key={label.text} x={6} y={label.y + 4} text={label.text} font={font} color={colors.graphite} />
+        <Text key={label.text} x={6} y={label.y - 4} text={label.text} font={font} color={colors.graphite} />
       ))}
     </Group>
   )
@@ -174,13 +191,13 @@ function PredictionMark({ x, transform, rank, font }: { readonly x: number; read
   chevron.moveTo(x - 8, y)
   chevron.lineTo(x, y - 8)
   chevron.lineTo(x + 8, y)
-  const textWidth = font ? font.measureText(rank).width : 0
+  const rankWidth = font ? textWidth(font, rank) : 0
   return (
     <Group>
       <Path path={chevron} color={colors.ocre} style="stroke" strokeWidth={stroke.medium}>
         <DashPathEffect intervals={[2, 2]} />
       </Path>
-      {font && <Text x={x - textWidth / 2} y={y + 15} text={rank} font={font} color={colors.ocre} />}
+      {font && <Text x={x - rankWidth / 2} y={y + 15} text={rank} font={font} color={colors.ocre} />}
     </Group>
   )
 }
@@ -219,8 +236,8 @@ function LandingMark({ x, side, transform, track, t, speed, font }: MarkProps & 
   tick.lineTo(x + dx - 2, y + 2)
   tick.lineTo(x + dx + 6, y - 6)
   const label = `${landing.toFixed(2).replace('.', ',')} s`
-  const textWidth = font ? font.measureText(label).width : 0
-  const textX = side === 'left' ? x + dx - textWidth + 6 : x + dx - 6
+  const labelWidth = font ? textWidth(font, label) : 0
+  const textX = side === 'left' ? x + dx - labelWidth + 6 : x + dx - 6
   return (
     <Group>
       <Path path={tick} color={colors.encre} style="stroke" strokeWidth={stroke.thick} start={0} end={progress} />
@@ -232,8 +249,8 @@ function LandingMark({ x, side, transform, track, t, speed, font }: MarkProps & 
 function Clock({ t, transform, font }: { readonly t: SharedValue<number>; readonly transform: FrameTransform; readonly font: SkFont | null }) {
   const text = useDerivedValue(() => `t = ${t.value.toFixed(2).replace('.', ',')} s`)
   if (!font) return null
-  const width = font.measureText('t = 00,00 s').width
-  return <Text x={transform.width - width - 10} y={20} text={text} font={font} color={colors.encre} />
+  const width = textWidth(font, 't = 00,00 s')
+  return <Text x={transform.width - width - 12} y={20} text={text} font={font} color={colors.encre} />
 }
 
 const styles = StyleSheet.create({

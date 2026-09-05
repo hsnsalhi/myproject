@@ -3,14 +3,14 @@ import type { Lesson } from '@/schema/lesson'
 
 export const freeFallTwoBalls = {
   id: 'chute-libre-deux-billes',
-  title: 'Quelle bille touche le sol en premier ?',
+  title: 'Quelle bille touche le sol en premier ?',
   level: 'college',
 
   hook: 'Aristote a écrit qu’une pierre dix fois plus lourde tombe dix fois plus vite. On l’a cru pendant deux mille ans. Devant toi : deux billes de même taille, l’une trente fois plus lourde que l’autre, à deux mètres du sol.',
 
   prediction: {
     kind: 'choice',
-    question: 'Laquelle touche le sol en premier ?',
+    question: 'Laquelle touche le sol en premier ?',
     observable: 'firstToLand',
     options: [
       {
@@ -45,7 +45,7 @@ export const freeFallTwoBalls = {
   observation: { launchLabel: 'Lâcher les billes' },
 
   explanation: [
-    { kind: 'text', text: 'Elles arrivent ensemble. Pourtant la lourde est tirée vers le bas trente fois plus fort. Où passe cette force ?' },
+    { kind: 'text', text: 'Elles arrivent ensemble. Pourtant la lourde est tirée vers le bas trente fois plus fort. Où passe cette force ?' },
     {
       kind: 'equation',
       steps: [
@@ -102,7 +102,7 @@ export const freeFallTwoBalls = {
   exercises: [
     {
       id: 'deux-hauteurs',
-      question: 'Deux billes identiques. Tu lâches la première de 2 m et la seconde de 1 m. Laquelle a la plus grande accélération ?',
+      question: 'Deux billes identiques. Tu lâches la première de 2 m et la seconde de 1 m. Laquelle a la plus grande accélération ?',
       options: [
         { id: 'haute', label: 'Celle lâchée de 2 m', misconception: 'Elle touche le sol à plus grande vitesse, c’est vrai : elle a eu plus de temps pour en prendre. Mais l’accélération, c’est le rythme auquel la vitesse augmente, et ce rythme est le même pour les deux.' },
         { id: 'basse', label: 'Celle lâchée de 1 m', misconception: 'Elle touche le sol plus tôt, mais pas parce qu’elle accélère plus : elle a simplement moins de chemin à faire.' },
@@ -117,7 +117,7 @@ export const freeFallTwoBalls = {
     },
     {
       id: 'feuille-boule',
-      question: 'Une feuille de papier à plat, et la même feuille froissée en boule. Même masse. Tu les lâches ensemble. Laquelle touche le sol en premier ?',
+      question: 'Une feuille de papier à plat, et la même feuille froissée en boule. Même masse. Tu les lâches ensemble. Laquelle touche le sol en premier ?',
       options: [
         { id: 'plat', label: 'La feuille à plat', misconception: 'Une feuille à plat ne tombe pas droit : elle plane, elle zigzague, l’air la porte. Elle arrive toujours après la boule.' },
         { id: 'boule', label: 'La boule' },
@@ -143,8 +143,8 @@ export const freeFallTwoBalls = {
     ],
     challenges: [
       { id: 'inverser', text: 'Trouve un réglage où la bille de plastique arrive nettement après l’autre. Puis un autre où elle arrive avant.' },
-      { id: 'lune', text: 'Règle la gravité de la Lune, 1,62 m/s². Combien de temps dure la chute ?' },
-      { id: 'cent-metres', text: 'Monte à 100 m avec la résistance de l’air. Lis les deux temps. Que dirait Aristote ?' },
+      { id: 'lune', text: 'Règle la gravité de la Lune, 1,62 m/s². Combien de temps dure la chute ?' },
+      { id: 'cent-metres', text: 'Monte à 100 m avec la résistance de l’air. Lis les deux temps. Que dirait Aristote ?' },
     ],
   },
 

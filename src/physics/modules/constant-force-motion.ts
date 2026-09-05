@@ -48,6 +48,8 @@ const DEFAULT_DRAG_COEFFICIENT = 0.47
 const DEFAULT_AIR_DENSITY_KG_M3 = 1.2
 /** Écart horizontal par défaut entre deux corps lâchés côte à côte. */
 const DEFAULT_BODY_SPACING_M = 1
+/** Temps de repos simulé après le dernier atterrissage : les corps restent au sol, les repères ont le temps de s'écrire. */
+const SETTLE_S = 0.5
 
 interface BodyState {
   x: number
@@ -92,9 +94,10 @@ function simulate(params: ConstantForceMotionParams): ConstantForceMotionResult 
 
   let t = 0
   let samples = 1
+  let allLandedAt: number | null = null
   const allLanded = (): boolean => states.every((s) => s.landed)
 
-  while (samples < MAX_SAMPLES && t < MAX_DURATION_S && !allLanded()) {
+  while (samples < MAX_SAMPLES && t < MAX_DURATION_S && (allLandedAt === null || t < allLandedAt + SETTLE_S)) {
     for (let i = 0; i < count; i++) {
       const body = bodies[i]
       const s = states[i]
@@ -150,6 +153,7 @@ function simulate(params: ConstantForceMotionParams): ConstantForceMotionResult 
       xs[i]?.push(states[i]?.x ?? 0)
       ys[i]?.push(states[i]?.y ?? 0)
     }
+    if (allLandedAt === null && allLanded()) allLandedAt = t
   }
 
   const tracks: BodyTrack[] = bodies.map((body, i) => ({
